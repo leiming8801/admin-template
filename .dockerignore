@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+*.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+README.md
+AGENTS.md
+docs

@@ -1,0 +1,116 @@
+// Generator & DataSource
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 后台用户管理 ============
+
+/// 后台管理员用户
+model AdminUser {
+  id           Int              @id @default(autoincrement())
+  username     String           @unique @db.VarChar(50)   // 登录用户名
+  password     String           @db.VarChar(255)          // bcrypt 加密密码
+  nickname     String           @db.VarChar(50)           // 昵称
+  email        String?          @unique @db.VarChar(100)  // 邮箱
+  phone        String?          @db.VarChar(20)           // 手机号
+  avatar       String?          @db.VarChar(500)           // 头像URL
+  status       Int              @default(1) @db.TinyInt   // 0=禁用 1=启用
+  lastLoginAt  DateTime?                                   // 最后登录时间
+  lastLoginIp  String?          @db.VarChar(50)            // 最后登录IP
+  remark       String?          @db.VarChar(500)           // 备注
+  roles        AdminUserRole[]
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@map("admin_user")
+}
+
+/// 角色
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique @db.VarChar(50)   // 角色名称
+  code        String           @unique @db.VarChar(50)   // 角色编码（如 super_admin）
+  sort        Int              @default(0)                // 排序
+  status      Int              @default(1) @db.TinyInt   // 0=禁用 1=启用
+  remark      String?          @db.VarChar(500)           // 备注
+  users       AdminUserRole[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("role")
+}
+
+/// 权限（菜单/按钮/API，树形结构）
+model Permission {
+  id          Int              @id @default(autoincrement())
+  parentId    Int              @default(0) @map("parent_id") // 父ID，0=根节点
+  name        String           @db.VarChar(100)   // 权限名称，存i18n key（如"menu.system.adminUser"），无翻译时直接显示原文
+  type        Int              @db.TinyInt         // 1=菜单 2=按钮 3=API
+  permission  String?          @db.VarChar(100)   // 权限标识（如"system:user:add"）
+  path        String?          @db.VarChar(200)   // 前端路由路径（菜单类型）
+  component   String?          @db.VarChar(200)   // 前端组件路径（菜单类型）
+  icon        String?          @db.VarChar(50)    // 菜单图标
+  sort        Int              @default(0)         // 排序
+  visible     Int              @default(1) @db.TinyInt // 0=隐藏 1=显示（菜单类型）
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("permission")
+}
+
+/// 用户-角色关联
+model AdminUserRole {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @map("user_id")
+  roleId    Int        @map("role_id")
+  user      AdminUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("admin_user_role")
+}
+
+/// 角色-权限关联
+model RolePermission {
+  id           Int         @id @default(autoincrement())
+  roleId       Int         @map("role_id")
+  permissionId Int         @map("permission_id")
+  role         Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permission")
+}
+
+// ============ 会员管理 ============
+
+/// 前台会员
+model Member {
+  id           Int       @id @default(autoincrement())
+  username     String?   @unique @db.VarChar(50)   // 用户名
+  nickname     String?   @db.VarChar(50)           // 昵称
+  phone        String?   @unique @db.VarChar(20)   // 手机号
+  email        String?   @unique @db.VarChar(100)  // 邮箱
+  avatar       String?   @db.VarChar(500)           // 头像
+  password     String    @db.VarChar(255)           // 密码（bcrypt）
+  gender       Int?      @db.TinyInt                // 0=未知 1=男 2=女
+  status       Int       @default(1) @db.TinyInt   // 0=禁用 1=启用
+  lastLoginAt  DateTime?                            // 最后登录时间
+  lastLoginIp  String?   @db.VarChar(50)            // 最后登录IP
+  remark       String?   @db.VarChar(500)           // 备注
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("member")
+}
+
+// 注：Member 表已有 password、status、lastLoginAt 等字段，
+// C端认证直接复用本表，无需新增表。
+// 会员 JWT 使用独立密钥签发，与后台管理员 JWT 完全隔离。

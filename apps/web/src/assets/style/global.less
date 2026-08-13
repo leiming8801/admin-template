@@ -1,0 +1,131 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  background-color: var(--color-bg-1);
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+.echarts-tooltip-diy {
+  background: linear-gradient(
+    304.17deg,
+    rgba(253, 254, 255, 0.6) -6.04%,
+    rgba(244, 247, 252, 0.6) 85.2%
+  ) !important;
+  border: none !important;
+  backdrop-filter: blur(10px) !important;
+  /* Note: backdrop-filter has minimal browser support */
+
+  border-radius: 6px !important;
+  .content-panel {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 9px;
+    background: rgba(255, 255, 255, 0.8);
+    width: 164px;
+    height: 32px;
+    line-height: 32px;
+    box-shadow: 6px 0px 20px rgba(34, 87, 188, 0.1);
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .tooltip-title {
+    margin: 0 0 10px 0;
+  }
+  p {
+    margin: 0;
+  }
+  .tooltip-title,
+  .tooltip-value {
+    font-size: 13px;
+    line-height: 15px;
+    display: flex;
+    align-items: center;
+    text-align: right;
+    color: #1d2129;
+    font-weight: bold;
+  }
+  .tooltip-item-icon {
+    display: inline-block;
+    margin-right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+}
+
+.general-card {
+  border-radius: 4px;
+  border: none;
+  & > .arco-card-header {
+    height: auto;
+    padding: 20px;
+    border: none;
+  }
+  & > .arco-card-body {
+    padding: 0 20px 20px 20px;
+  }
+}
+
+.split-line {
+  border-color: rgb(var(--gray-2));
+}
+
+/* 通用圆点（替代原 .arco-table-cell .circle，兼容暗色） */
+.table-dot {
+  display: inline-block;
+  margin-right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgb(var(--blue-6));
+  &.pass {
+    background-color: rgb(var(--green-6));
+  }
+}
+
+/* VxeTable 主题变量映射到 Arco 设计令牌 */
+:root {
+  --vxe-ui-font-secondary-color: var(--color-text-3);
+  --vxe-ui-font-placeholder-color: var(--color-text-3);
+}
+
+[data-vxe-ui-theme='light'],
+[data-vxe-ui-theme='dark'] {
+  --vxe-ui-font-color: var(--color-text-1);
+  --vxe-ui-font-primary-color: rgb(var(--primary-6));
+  --vxe-ui-font-primary-hover-color: rgb(var(--primary-5));
+  --vxe-ui-font-primary-lighten-color: rgb(var(--primary-5));
+  --vxe-ui-font-primary-tinge-color: rgb(var(--primary-2));
+  --vxe-ui-layout-background-color: var(--color-bg-2);
+  --vxe-ui-loading-background-color: var(--color-bg-2);
+  --vxe-ui-base-active-background-color: rgb(var(--primary-1));
+  --vxe-ui-base-hover-background-color: var(--color-fill-2);
+  --vxe-ui-input-border-color: var(--color-neutral-3);
+  --vxe-ui-input-placeholder-color: var(--color-text-3);
+  --vxe-ui-table-header-background-color: var(--color-fill-2);
+  --vxe-ui-table-border-color: var(--color-neutral-3);
+  --vxe-ui-table-row-hover-background-color: var(--color-fill-2);
+  --vxe-ui-table-row-striped-background-color: var(--color-fill-1);
+  --vxe-ui-table-row-current-background-color: rgb(var(--primary-1));
+  --vxe-ui-table-row-hover-current-background-color: var(--color-fill-2);
+
+  /* 表格行高与字重精调 */
+  --vxe-ui-table-row-height-default: 44px;
+  --vxe-ui-table-row-height-medium: 40px;
+  --vxe-ui-table-row-height-small: 36px;
+  --vxe-ui-table-row-line-height: 20px;
+  --vxe-ui-table-header-font-weight: 500;
+  --vxe-ui-table-border-width: 1px;
+  --vxe-ui-table-cell-padding-default: 12px;
+  --vxe-ui-table-cell-padding-medium: 11px;
+  --vxe-ui-table-cell-padding-small: 10px;
+}

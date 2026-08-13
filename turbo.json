@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env", "tsconfig.json"],
+  "globalEnv": [
+    "NODE_ENV",
+    "PORT",
+    "DATABASE_URL",
+    "JWT_SECRET",
+    "JWT_ACCESS_EXPIRES",
+    "JWT_REFRESH_SECRET",
+    "JWT_REFRESH_EXPIRES",
+    "JWT_MEMBER_SECRET",
+    "JWT_MEMBER_ACCESS_EXPIRES",
+    "JWT_MEMBER_REFRESH_SECRET",
+    "JWT_MEMBER_REFRESH_EXPIRES"
+  ],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".nuxt/**", ".output/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false,
+      "persistent": false
+    },
+    "db:seed": {
+      "cache": false,
+      "persistent": false
+    }
+  }
+}

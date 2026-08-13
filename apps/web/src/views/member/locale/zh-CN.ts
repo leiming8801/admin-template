@@ -1,0 +1,43 @@
+export default {
+  'member.search.placeholder': '搜索用户名',
+  'member.search.phone': '手机号',
+  'member.search.phonePlaceholder': '搜索手机号',
+  'member.search.status': '状态',
+  'member.search.status.enabled': '启用',
+  'member.search.status.disabled': '禁用',
+
+  'member.table.avatar': '头像',
+  'member.table.username': '用户名',
+  'member.table.nickname': '昵称',
+  'member.table.phone': '手机号',
+  'member.table.email': '邮箱',
+  'member.table.gender': '性别',
+  'member.table.status': '状态',
+  'member.table.createdAt': '注册时间',
+  'member.table.action': '操作',
+
+  'member.gender.unknown': '未知',
+  'member.gender.male': '男',
+  'member.gender.female': '女',
+
+  'member.status.enabled': '启用',
+  'member.status.disabled': '禁用',
+
+  'member.action.edit': '编辑',
+  'member.action.delete': '删除',
+  'member.confirmDelete': '确定删除该会员吗？',
+  'member.deleteSuccess': '删除成功',
+
+  'member.form.edit': '编辑会员',
+  'member.form.nickname': '昵称',
+  'member.form.nickname.placeholder': '请输入昵称',
+  'member.form.phone': '手机号',
+  'member.form.phone.placeholder': '请输入手机号',
+  'member.form.email': '邮箱',
+  'member.form.email.placeholder': '请输入邮箱',
+  'member.form.gender': '性别',
+  'member.form.status': '状态',
+  'member.form.remark': '备注',
+  'member.form.remark.placeholder': '备注信息',
+  'member.form.editSuccess': '编辑成功',
+};

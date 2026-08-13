@@ -1,0 +1,43 @@
+export default {
+  'member.search.placeholder': 'Search username',
+  'member.search.phone': 'Phone',
+  'member.search.phonePlaceholder': 'Search phone',
+  'member.search.status': 'Status',
+  'member.search.status.enabled': 'Enabled',
+  'member.search.status.disabled': 'Disabled',
+
+  'member.table.avatar': 'Avatar',
+  'member.table.username': 'Username',
+  'member.table.nickname': 'Nickname',
+  'member.table.phone': 'Phone',
+  'member.table.email': 'Email',
+  'member.table.gender': 'Gender',
+  'member.table.status': 'Status',
+  'member.table.createdAt': 'Created At',
+  'member.table.action': 'Action',
+
+  'member.gender.unknown': 'Unknown',
+  'member.gender.male': 'Male',
+  'member.gender.female': 'Female',
+
+  'member.status.enabled': 'Enabled',
+  'member.status.disabled': 'Disabled',
+
+  'member.action.edit': 'Edit',
+  'member.action.delete': 'Delete',
+  'member.confirmDelete': 'Are you sure to delete this member?',
+  'member.deleteSuccess': 'Deleted successfully',
+
+  'member.form.edit': 'Edit Member',
+  'member.form.nickname': 'Nickname',
+  'member.form.nickname.placeholder': 'Enter nickname',
+  'member.form.phone': 'Phone',
+  'member.form.phone.placeholder': 'Enter phone number',
+  'member.form.email': 'Email',
+  'member.form.email.placeholder': 'Enter email',
+  'member.form.gender': 'Gender',
+  'member.form.status': 'Status',
+  'member.form.remark': 'Remark',
+  'member.form.remark.placeholder': 'Remark information',
+  'member.form.editSuccess': 'Edit successful',
+};

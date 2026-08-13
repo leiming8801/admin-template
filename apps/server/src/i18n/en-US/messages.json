@@ -1,0 +1,46 @@
+{
+  "auth": {
+    "loginFailed": "Invalid username or password",
+    "tokenExpired": "Session expired, please log in again",
+    "noPermission": "Access denied",
+    "accountDisabled": "Account is disabled, please contact the administrator",
+    "roleDisabled": "Your role has been disabled, please contact the administrator",
+    "refreshTokenInvalid": "Invalid refresh token, please log in again",
+    "invalidTokenType": "Invalid token type",
+    "invalidTokenScope": "Invalid token scope"
+  },
+  "common": {
+    "notFound": "Resource not found",
+    "serverError": "Internal server error",
+    "paramsError": "Invalid parameters"
+  },
+  "system": {
+    "permission": {
+      "notFound": "Permission not found",
+      "nameExists": "Permission name already exists",
+      "codeExists": "Permission code already exists",
+      "hasChildren": "Cannot delete permission with child permissions"
+    },
+    "role": {
+      "notFound": "Role not found",
+      "nameExists": "Role name already exists",
+      "codeExists": "Role code already exists",
+      "codeFormat": "Role code can only contain lowercase letters, numbers and underscores, starting with a letter",
+      "inUse": "Role is assigned to users and cannot be deleted"
+    },
+    "adminUser": {
+      "notFound": "User not found",
+      "usernameExists": "Username already exists",
+      "emailExists": "Email already in use",
+      "phoneExists": "Phone number already in use",
+      "cannotDeleteAdmin": "Super admin account cannot be deleted",
+      "cannotDisableAdmin": "Super admin account cannot be disabled",
+      "invalidRoles": "Contains invalid or disabled roles"
+    }
+  },
+  "member": {
+    "notFound": "Member not found",
+    "phoneExists": "Phone number already in use",
+    "emailExists": "Email already in use"
+  }
+}
