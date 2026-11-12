@@ -24,5 +24,8 @@ export default {
   'system.profile.confirmPasswordPlaceholder': 'Enter new password again',
   'system.profile.confirmPasswordRequired': 'Please enter new password again',
   'system.profile.passwordMismatch': 'Passwords do not match',
-  'system.profile.passwordChanged': 'Password changed successfully, please log in again'
+  'system.profile.passwordChanged': 'Password changed successfully, please log in again',
+  'system.profile.avatarUpload': 'Upload avatar',
+  'system.profile.avatarTip': 'JPG, PNG, or WebP, up to 2MB',
+  'system.profile.avatarUploadSuccess': 'Avatar uploaded successfully'
 };

@@ -15,6 +15,8 @@ import { LoginResult, UserProfile, MenuItem, RefreshTokenResult } from '@admin-t
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { FileService } from '../file/file.service';
+import { UploadedFileInput } from '../file/file.types';
 
 /**
  * 认证服务 - 登录、Token 签发/刷新、用户信息获取、动态菜单获取
@@ -26,6 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly authSessionService: AuthSessionService,
+    private readonly fileService: FileService,
   ) {}
 
   /** 用户登录 */
@@ -193,7 +196,7 @@ export class AuthService {
       id: user.id,
       username: user.username,
       nickname: user.nickname,
-      avatar: user.avatar || undefined,
+      avatar: this.fileService.getAvatarUrl(user.avatar),
       roles,
       permissions: Array.from(permissions),
     };
@@ -216,6 +219,40 @@ export class AuthService {
       where: { id: userId },
       data: { nickname: dto.nickname },
     });
+  }
+
+  async updateAvatar(
+    userId: number,
+    file: UploadedFileInput | undefined,
+  ): Promise<void> {
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id: userId },
+      select: { id: true, avatar: true, status: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('auth.tokenExpired');
+    }
+    if (user.status === 0) {
+      throw new UnauthorizedException('auth.accountDisabled');
+    }
+
+    const owner = { type: 'admin' as const, id: userId };
+    const record = await this.fileService.upload(file, owner, 'avatar');
+    try {
+      await this.prisma.adminUser.update({
+        where: { id: userId },
+        data: { avatar: record.objectKey },
+      });
+    } catch (error) {
+      await this.fileService
+        .removeAvatar(record.objectKey, owner)
+        .catch(() => undefined);
+      throw error;
+    }
+
+    if (user.avatar && user.avatar !== record.objectKey) {
+      await this.fileService.removeAvatar(user.avatar, owner).catch(() => undefined);
+    }
   }
 
   /** 验证当前密码后修改当前用户密码 */

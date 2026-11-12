@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -9,6 +20,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { UploadedFileInput } from '../file/file.types';
 
 @ApiTags('认证')
 @Controller('admin/auth')
@@ -49,6 +61,23 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ) {
     await this.authService.updateProfile(user.sub, dto);
+    return null;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('avatar')
+  @ApiOperation({ summary: '上传当前用户头像' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { files: 1, fileSize: 2 * 1024 * 1024 },
+    }),
+  )
+  async updateAvatar(
+    @CurrentUser() user: JwtPayload,
+    @UploadedFile() file: UploadedFileInput | undefined,
+  ) {
+    await this.authService.updateAvatar(user.sub, file);
     return null;
   }
 

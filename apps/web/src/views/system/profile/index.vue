@@ -5,9 +5,26 @@
       <a-col :span="24">
         <a-card :bordered="false">
           <a-space :size="54">
-            <a-avatar :size="100" class="info-avatar">
-              <img :src="avatarUrl" />
-            </a-avatar>
+            <div class="avatar-section">
+              <a-avatar :size="100" class="info-avatar">
+                <img :src="avatarUrl" />
+              </a-avatar>
+              <a-button
+                size="small"
+                :loading="uploadingAvatar"
+                @click="selectAvatar"
+              >
+                {{ $t('system.profile.avatarUpload') }}
+              </a-button>
+              <span class="avatar-tip">{{ $t('system.profile.avatarTip') }}</span>
+              <input
+                ref="avatarInputRef"
+                class="avatar-input"
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                @change="handleAvatarChange"
+              />
+            </div>
             <a-descriptions
               :data="renderData"
               :column="2"
@@ -160,7 +177,7 @@
   import { useI18n } from 'vue-i18n';
   import { useUserStore } from '@/store';
   import { resolveAvatar } from '@/utils/avatar';
-  import { updateProfile, updatePassword } from '@/api/user';
+  import { updateProfile, updatePassword, uploadAvatar } from '@/api/user';
   import { redirectToLogin } from '@/api/interceptor';
 
   const { t } = useI18n();
@@ -171,6 +188,8 @@
   const passwordFormRef = ref<FormInstance>();
   const saving = ref(false);
   const changingPassword = ref(false);
+  const uploadingAvatar = ref(false);
+  const avatarInputRef = ref<HTMLInputElement>();
 
   const basicFormData = reactive({
     username: '',
@@ -191,6 +210,28 @@
     { label: t('system.profile.roles'), value: (userStore.roles || []).join(', ') || '-' },
     { label: t('system.profile.email'), value: userStore.email || '-' },
   ]);
+
+  const selectAvatar = () => {
+    avatarInputRef.value?.click();
+  };
+
+  const handleAvatarChange = async (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    uploadingAvatar.value = true;
+    try {
+      await uploadAvatar(file);
+      await userStore.info();
+      Message.success(t('system.profile.avatarUploadSuccess'));
+    } catch {
+      // interceptor 已处理
+    } finally {
+      uploadingAvatar.value = false;
+      input.value = '';
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -272,6 +313,23 @@
 <style scoped lang="less">
   .container {
     padding: 0 20px 20px 20px;
+  }
+
+  .avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .avatar-tip {
+    color: var(--color-text-3);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .avatar-input {
+    display: none;
   }
 
   .wrapper {

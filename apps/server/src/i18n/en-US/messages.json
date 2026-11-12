@@ -18,6 +18,14 @@
     "serverError": "Internal server error",
     "paramsError": "Invalid parameters"
   },
+  "file": {
+    "required": "Please select a file to upload",
+    "tooLarge": "File size cannot exceed 10MB",
+    "invalidType": "Unsupported file type",
+    "avatarTooLarge": "Avatar size cannot exceed 2MB",
+    "invalidAvatar": "Avatar must be a JPG, PNG, or WebP image",
+    "notFound": "File not found"
+  },
   "system": {
     "permission": {
       "notFound": "Permission not found",

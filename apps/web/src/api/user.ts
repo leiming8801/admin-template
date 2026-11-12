@@ -38,6 +38,12 @@ export function updateProfile(data: UpdateProfileRequest) {
   return httpClient.put<void>('/api/admin/auth/profile', data);
 }
 
+export function uploadAvatar(file: File) {
+  const data = new FormData();
+  data.append('file', file);
+  return httpClient.post<void>('/api/admin/auth/avatar', data);
+}
+
 export function updatePassword(data: UpdatePasswordRequest) {
   return httpClient.put<void>('/api/admin/auth/password', data);
 }

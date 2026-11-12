@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SystemModule } from './modules/system/system.module';
 import { MemberModule } from './modules/member/member.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { FileModule } from './modules/file/file.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -36,6 +37,8 @@ import { validateEnvironment } from './config/validation';
     MemberModule,
     // 工作台模块
     DashboardModule,
+    // 本地文件模块
+    FileModule,
   ],
   providers: [
     // 全局异常过滤器（通过 DI 注入 I18nService，确保翻译已加载）

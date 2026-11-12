@@ -133,3 +133,19 @@ model Member {
 // 注：Member 表已有 password、status、lastLoginAt 等字段，
 // C端认证直接复用本表，无需新增表。
 // 会员 JWT 使用独立密钥签发，与后台管理员 JWT 完全隔离。
+
+model FileObject {
+  id           Int      @id @default(autoincrement())
+  ownerType    String   @map("owner_type") @db.VarChar(20)
+  ownerId      Int      @map("owner_id")
+  purpose      String   @db.VarChar(30)
+  objectKey    String   @unique @map("object_key") @db.VarChar(500)
+  originalName String   @map("original_name") @db.VarChar(255)
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  extension    String   @db.VarChar(20)
+  size         Int
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([ownerType, ownerId])
+  @@map("file_object")
+}

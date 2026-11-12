@@ -18,6 +18,14 @@
     "serverError": "服务器内部错误",
     "paramsError": "参数错误"
   },
+  "file": {
+    "required": "请选择要上传的文件",
+    "tooLarge": "文件大小不能超过 10MB",
+    "invalidType": "不支持的文件类型",
+    "avatarTooLarge": "头像大小不能超过 2MB",
+    "invalidAvatar": "头像仅支持 JPG、PNG 或 WebP 图片",
+    "notFound": "文件不存在"
+  },
   "system": {
     "permission": {
       "notFound": "权限不存在",

@@ -24,5 +24,8 @@ export default {
   'system.profile.confirmPasswordPlaceholder': '请再次输入新密码',
   'system.profile.confirmPasswordRequired': '请再次输入新密码',
   'system.profile.passwordMismatch': '两次输入的密码不一致',
-  'system.profile.passwordChanged': '密码修改成功，请重新登录'
+  'system.profile.passwordChanged': '密码修改成功，请重新登录',
+  'system.profile.avatarUpload': '上传头像',
+  'system.profile.avatarTip': '支持 JPG、PNG、WebP，不超过 2MB',
+  'system.profile.avatarUploadSuccess': '头像上传成功'
 };

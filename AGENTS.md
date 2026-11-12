@@ -57,6 +57,7 @@ pnpm workspace monorepo，三个包：`apps/server`（NestJS 后端）、`apps/w
 - **权限校验**：在 Controller 方法上用 `@RequirePermission('system:user:view')` 声明所需权限码
 - **异常消息**：Service / Guard / Strategy 层 throw 时**只传 i18n key**（如 `'auth.loginFailed'`），由全局 `AllExceptionsFilter` 根据 `Accept-Language` 头统一翻译
 - **响应格式**：全局 `TransformInterceptor` 自动包装为 `{ code: 200, message: 'success', data }`，Controller 直接返回业务数据即可
+- **本地文件**：实际文件存 `apps/server/storage/uploads/`（已 Git 忽略）；普通文件 `/api/admin/files` 需登录并校验归属，头像经 `/api/file-assets/avatars/...` 公开读取，文件流接口用 `@SkipTransform()`
 - **分页约定**：返回 `{ list, total, page, pageSize }`，查询参数用 `page` / `pageSize`
 - **密码加密**：使用 `bcryptjs`，hash 轮数 10
 - **认证会话**：双 Token 必须携带 `sid`；`admin_session` 只保存 Refresh Token 的 SHA-256 哈希，刷新必须轮换双 Token，登出/改密/重置密码/禁用用户必须撤销对应会话
