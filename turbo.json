@@ -33,6 +33,18 @@
     "db:generate": {
       "cache": false
     },
+    "db:migrate:dev": {
+      "cache": false,
+      "persistent": false
+    },
+    "db:migrate:deploy": {
+      "cache": false,
+      "persistent": false
+    },
+    "db:migrate:status": {
+      "cache": false,
+      "persistent": false
+    },
     "db:push": {
       "cache": false,
       "persistent": false

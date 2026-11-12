@@ -6,6 +6,10 @@
     "accountDisabled": "Account is disabled, please contact the administrator",
     "roleDisabled": "Your role has been disabled, please contact the administrator",
     "refreshTokenInvalid": "Invalid refresh token, please log in again",
+    "refreshTokenReused": "Suspicious session activity detected, please log in again",
+    "sessionInvalid": "Your session is no longer valid, please log in again",
+    "oldPasswordIncorrect": "The current password is incorrect",
+    "newPasswordSame": "The new password must be different from the current password",
     "invalidTokenType": "Invalid token type",
     "invalidTokenScope": "Invalid token scope"
   },

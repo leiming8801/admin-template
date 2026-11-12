@@ -1,6 +1,5 @@
 import { createApp } from 'vue';
 import ArcoVue from '@arco-design/web-vue';
-import ArcoVueIcon from '@arco-design/web-vue/es/icon';
 import VxeUIAll, { VxeUI } from 'vxe-pc-ui';
 import 'vxe-pc-ui/es/style.css';
 import VxeUITable from 'vxe-table';
@@ -37,7 +36,6 @@ document.body.setAttribute(
 const app = createApp(App);
 
 app.use(ArcoVue, {});
-app.use(ArcoVueIcon);
 app.use(VxeUIAll);
 app.use(VxeUITable);
 

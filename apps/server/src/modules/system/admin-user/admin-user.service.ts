@@ -10,6 +10,7 @@ import { AdminUser, PageResult } from '@admin-template/shared';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 import { formatDate } from '../../../common/utils/format';
+import { AuthSessionService } from '../../auth/auth-session.service';
 
 /** 后台用户列表查询参数 */
 export interface AdminUserListQuery {
@@ -28,7 +29,10 @@ const PROTECTED_USERNAME = 'admin';
  */
 @Injectable()
 export class AdminUserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authSessionService: AuthSessionService,
+  ) {}
 
   /** 分页查询用户列表 */
   async findAll(query: AdminUserListQuery): Promise<PageResult<AdminUser>> {
@@ -175,23 +179,33 @@ export class AdminUserService {
       }
     }
 
-    const user = await this.prisma.adminUser.update({
-      where: { id },
-      data: {
-        ...(dto.nickname !== undefined && { nickname: dto.nickname }),
-        ...(dto.email !== undefined && { email: dto.email || null }),
-        ...(dto.phone !== undefined && { phone: dto.phone || null }),
-        ...(dto.avatar !== undefined && { avatar: dto.avatar || null }),
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.remark !== undefined && { remark: dto.remark || null }),
-      },
-      include: {
-        roles: {
-          include: {
-            role: true,
+    const user = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.adminUser.update({
+        where: { id },
+        data: {
+          ...(dto.nickname !== undefined && { nickname: dto.nickname }),
+          ...(dto.email !== undefined && { email: dto.email || null }),
+          ...(dto.phone !== undefined && { phone: dto.phone || null }),
+          ...(dto.avatar !== undefined && { avatar: dto.avatar || null }),
+          ...(dto.status !== undefined && { status: dto.status }),
+          ...(dto.remark !== undefined && { remark: dto.remark || null }),
+        },
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
           },
         },
-      },
+      });
+      if (dto.status === 0) {
+        await this.authSessionService.revokeAllUserSessions(
+          id,
+          'user_disabled',
+          tx,
+        );
+      }
+      return updated;
     });
 
     return this.toAdminUserType(user);
@@ -256,9 +270,16 @@ export class AdminUserService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await this.prisma.adminUser.update({
-      where: { id },
-      data: { password: hashedPassword },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.adminUser.update({
+        where: { id },
+        data: { password: hashedPassword },
+      });
+      await this.authSessionService.revokeAllUserSessions(
+        id,
+        'password_reset',
+        tx,
+      );
     });
   }
 
@@ -276,9 +297,18 @@ export class AdminUserService {
       throw new BadRequestException('system.adminUser.cannotDisableAdmin');
     }
 
-    await this.prisma.adminUser.update({
-      where: { id },
-      data: { status },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.adminUser.update({
+        where: { id },
+        data: { status },
+      });
+      if (status === 0) {
+        await this.authSessionService.revokeAllUserSessions(
+          id,
+          'user_disabled',
+          tx,
+        );
+      }
     });
   }
 

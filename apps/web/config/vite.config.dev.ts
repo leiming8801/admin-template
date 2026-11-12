@@ -28,7 +28,7 @@ export default mergeConfig(
         'lodash',
         'query-string',
         '@arco-design/web-vue',
-        '@arco-design/web-vue/es/icon',
+        '@lucide/vue',
         '@vueuse/core',
         'vue-i18n',
       ],

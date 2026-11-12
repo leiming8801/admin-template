@@ -1,12 +1,20 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
-import { config } from '../../config';
 import { AUTH_CONSTANTS } from './auth.constants';
 import { JwtPayload } from '../../common/decorators/current-user.decorator';
+import { AuthSessionService } from './auth-session.service';
 import { LoginResult, UserProfile, MenuItem, RefreshTokenResult } from '@admin-template/shared';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 /**
  * 认证服务 - 登录、Token 签发/刷新、用户信息获取、动态菜单获取
@@ -16,6 +24,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly authSessionService: AuthSessionService,
   ) {}
 
   /** 用户登录 */
@@ -46,64 +56,103 @@ export class AuthService {
       throw new UnauthorizedException('auth.roleDisabled');
     }
 
-    // 生成 accessToken 和 refreshToken
-    const accessToken = this.generateAccessToken(user.id, user.username);
-    const refreshToken = this.generateRefreshToken(user.id);
-    const expiresIn = this.parseExpiresToSeconds(config.jwt.accessExpires);
+    // 创建固定有效期的服务端会话，数据库只保存 Refresh Token 哈希
+    const sessionId = randomUUID();
+    const expiresIn = this.parseExpiresToSeconds(
+      this.configService.getOrThrow<string>('jwt.accessExpires'),
+    );
+    const refreshExpiresIn = this.parseExpiresToSeconds(
+      this.configService.getOrThrow<string>('jwt.refreshExpires'),
+    );
+    const sessionExpiresAt = new Date(Date.now() + refreshExpiresIn * 1000);
+    const accessToken = this.generateAccessToken(
+      user.id,
+      user.username,
+      sessionId,
+    );
+    const refreshToken = this.generateRefreshToken(
+      user.id,
+      sessionId,
+      refreshExpiresIn,
+    );
 
-    // 更新最后登录时间
-    await this.prisma.adminUser.update({
-      where: { id: user.id },
-      data: {
-        lastLoginAt: new Date(),
-        lastLoginIp: ip,
-      },
+    // 会话与最后登录信息同事务写入
+    await this.prisma.$transaction(async (tx) => {
+      await this.authSessionService.createSession(
+        user.id,
+        sessionId,
+        refreshToken,
+        sessionExpiresAt,
+        tx,
+      );
+      await tx.adminUser.update({
+        where: { id: user.id },
+        data: {
+          lastLoginAt: new Date(),
+          lastLoginIp: ip,
+        },
+      });
     });
 
     return { accessToken, refreshToken, expiresIn };
   }
 
-  /** 刷新 accessToken */
+  /** 轮换双 Token；旧 Refresh Token 重放会撤销当前会话。 */
   async refresh(refreshToken: string): Promise<RefreshTokenResult> {
     let payload: JwtPayload;
     try {
       payload = this.jwtService.verify<JwtPayload>(refreshToken, {
-        secret: config.jwt.refreshSecret,
+        secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
       });
     } catch {
       throw new UnauthorizedException('auth.refreshTokenInvalid');
     }
 
     if (payload.type !== AUTH_CONSTANTS.TOKEN_TYPE_REFRESH) {
-      throw new UnauthorizedException('auth.refreshTokenInvalid');
+      throw new UnauthorizedException('auth.invalidTokenType');
+    }
+    if (payload.scope !== AUTH_CONSTANTS.SCOPE_ADMIN) {
+      throw new UnauthorizedException('auth.invalidTokenScope');
+    }
+    if (!payload.sid) {
+      throw new UnauthorizedException('auth.sessionInvalid');
     }
 
-    const user = await this.prisma.adminUser.findUnique({
-      where: { id: payload.sub },
-      include: {
-        roles: { include: { role: { select: { status: true } } } },
-      },
-    });
+    // 新 Token 沿用会话固定过期时间，不因刷新无限延长会话。
+    const session = await this.authSessionService.getActiveSession(
+      payload.sid,
+      payload.sub,
+    );
+    const refreshExpiresIn = Math.max(
+      1,
+      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000),
+    );
+    const accessToken = this.generateAccessToken(
+      payload.sub,
+      session.user.username,
+      payload.sid,
+    );
+    const newRefreshToken = this.generateRefreshToken(
+      payload.sub,
+      payload.sid,
+      refreshExpiresIn,
+    );
+    const expiresIn = this.parseExpiresToSeconds(
+      this.configService.getOrThrow<string>('jwt.accessExpires'),
+    );
 
-    if (!user || user.status === 0) {
-      throw new UnauthorizedException('auth.accountDisabled');
-    }
-
-    // 用户所有角色均被禁用时拒绝刷新 token
-    const hasActiveRole = user.roles.some((ur) => ur.role.status === 1);
-    if (!hasActiveRole) {
-      throw new UnauthorizedException('auth.roleDisabled');
-    }
-
-    const accessToken = this.generateAccessToken(user.id, user.username);
-    const expiresIn = this.parseExpiresToSeconds(config.jwt.accessExpires);
-
-    return { accessToken, expiresIn };
+    await this.authSessionService.rotateRefreshToken(
+      payload.sid,
+      payload.sub,
+      refreshToken,
+      newRefreshToken,
+    );
+    return { accessToken, refreshToken: newRefreshToken, expiresIn };
   }
 
-  /** 登出（当前为无状态 JWT，登出由前端删除 token 即可） */
-  async logout(): Promise<void> {
-    return;
+  /** 撤销当前会话，使其 Access/Refresh Token 均不可继续使用。 */
+  async logout(sessionId: string, userId: number): Promise<void> {
+    await this.authSessionService.revokeSession(sessionId, userId);
   }
 
   /** 获取当前用户信息 + 角色权限（仅含启用角色） */
@@ -148,6 +197,59 @@ export class AuthService {
       roles,
       permissions: Array.from(permissions),
     };
+  }
+
+  /** 更新当前用户昵称 */
+  async updateProfile(userId: number, dto: UpdateProfileDto): Promise<void> {
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id: userId },
+      select: { id: true, status: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('auth.tokenExpired');
+    }
+    if (user.status === 0) {
+      throw new UnauthorizedException('auth.accountDisabled');
+    }
+
+    await this.prisma.adminUser.update({
+      where: { id: userId },
+      data: { nickname: dto.nickname },
+    });
+  }
+
+  /** 验证当前密码后修改当前用户密码 */
+  async updatePassword(userId: number, dto: UpdatePasswordDto): Promise<void> {
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new UnauthorizedException('auth.tokenExpired');
+    }
+    if (user.status === 0) {
+      throw new UnauthorizedException('auth.accountDisabled');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('auth.oldPasswordIncorrect');
+    }
+    if (dto.oldPassword === dto.newPassword) {
+      throw new BadRequestException('auth.newPasswordSame');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.adminUser.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+      await this.authSessionService.revokeAllUserSessions(
+        userId,
+        'password_changed',
+        tx,
+      );
+    });
   }
 
   /** 获取当前用户的动态菜单树 */
@@ -222,30 +324,42 @@ export class AuthService {
   }
 
   /** 生成 accessToken */
-  private generateAccessToken(userId: number, username: string): string {
+  private generateAccessToken(
+    userId: number,
+    username: string,
+    sessionId: string,
+  ): string {
     const payload: JwtPayload = {
       sub: userId,
       username,
+      sid: sessionId,
+      jti: randomUUID(),
       type: AUTH_CONSTANTS.TOKEN_TYPE_ACCESS,
       scope: AUTH_CONSTANTS.SCOPE_ADMIN,
     };
     return this.jwtService.sign(payload, {
-      secret: config.jwt.secret,
-      expiresIn: config.jwt.accessExpires,
+      secret: this.configService.getOrThrow<string>('jwt.secret'),
+      expiresIn: this.configService.getOrThrow<string>('jwt.accessExpires'),
     });
   }
 
-  /** 生成 refreshToken */
-  private generateRefreshToken(userId: number): string {
+  /** 生成 refreshToken，过期时间不超过所属会话的固定过期时间。 */
+  private generateRefreshToken(
+    userId: number,
+    sessionId: string,
+    expiresIn: number,
+  ): string {
     const payload: JwtPayload = {
       sub: userId,
       username: '',
+      sid: sessionId,
+      jti: randomUUID(),
       type: AUTH_CONSTANTS.TOKEN_TYPE_REFRESH,
       scope: AUTH_CONSTANTS.SCOPE_ADMIN,
     };
     return this.jwtService.sign(payload, {
-      secret: config.jwt.refreshSecret,
-      expiresIn: config.jwt.refreshExpires,
+      secret: this.configService.getOrThrow<string>('jwt.refreshSecret'),
+      expiresIn,
     });
   }
 

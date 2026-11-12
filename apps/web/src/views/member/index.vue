@@ -137,14 +137,14 @@
     },
     ajax: {
       query: async ({ page }) => {
-        const res = await fetchMembers({
+        const result = await fetchMembers({
           page: page.currentPage,
           pageSize: page.pageSize,
           username: searchUsername.value || undefined,
           phone: searchPhone.value || undefined,
           status: searchStatus.value,
         });
-        return { list: res.data.list, total: res.data.total };
+        return { list: result.list, total: result.total };
       },
     },
   }));

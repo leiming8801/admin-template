@@ -77,8 +77,8 @@
         fetchAllRoles(),
         fetchAdminUserById(props.userId),
       ]);
-      allRoles.value = rolesRes.data;
-      targetValues.value = (userRes.data.roleIds || []).map(String);
+      allRoles.value = rolesRes;
+      targetValues.value = (userRes.roleIds || []).map(String);
     } catch {
       // interceptor 已处理
     } finally {

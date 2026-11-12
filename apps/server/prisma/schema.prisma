@@ -24,10 +24,29 @@ model AdminUser {
   lastLoginIp  String?          @db.VarChar(50)            // 最后登录IP
   remark       String?          @db.VarChar(500)           // 备注
   roles        AdminUserRole[]
+  sessions     AdminSession[]
   createdAt    DateTime         @default(now()) @map("created_at")
   updatedAt    DateTime         @updatedAt @map("updated_at")
 
   @@map("admin_user")
+}
+
+/// 后台管理员登录会话，Refresh Token 只保存哈希并在刷新时轮换
+model AdminSession {
+  id               String    @id @default(uuid()) @db.Char(36)
+  userId           Int       @map("user_id")
+  refreshTokenHash String    @map("refresh_token_hash") @db.Char(64)
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  revokedReason    String?   @map("revoked_reason") @db.VarChar(32)
+  lastUsedAt       DateTime? @map("last_used_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  user             AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("admin_session")
 }
 
 /// 角色

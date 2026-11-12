@@ -36,6 +36,12 @@ export default {
 
   'system.role.assign.title': 'Assign Permissions',
   'system.role.assign.loading': 'Loading...',
-  'system.role.assign.tip': 'Select the menus and permissions this role can access',
+  'system.role.assign.tip':
+    'Select the menus and buttons this role can access. Selecting a child item also selects its parent menus, and unchecking a menu unchecks all of its children.',
+  'system.role.assign.search.placeholder': 'Search permission name / code',
+  'system.role.assign.checkAll': 'Select all',
+  'system.role.assign.selected': '{count} selected',
+  'system.role.assign.expandAll': 'Expand all',
+  'system.role.assign.collapseAll': 'Collapse all',
   'system.role.assign.success': 'Permissions assigned successfully',
 };

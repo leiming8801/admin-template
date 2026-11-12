@@ -5,6 +5,7 @@ dist
 .turbo
 **/.turbo
 *.log
+.tmp
 .git
 .gitignore
 .env

@@ -2,7 +2,7 @@
   <div v-if="!appStore.navbar" class="fixed-settings" @click="setVisible">
     <a-button type="primary">
       <template #icon>
-        <icon-settings />
+        <Settings :size="16" />
       </template>
     </a-button>
   </div>
@@ -27,6 +27,7 @@
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useClipboard } from '@vueuse/core';
+  import { Settings } from '@lucide/vue';
   import { useAppStore } from '@/store';
   import Block from './block.vue';
 

@@ -17,10 +17,10 @@
         <a-card>
           <div class="stat-card">
             <div class="stat-icon" :style="{ background: card.bgColor }">
-              <icon-user-group v-if="card.icon === 'role'" />
-              <icon-user v-else-if="card.icon === 'adminUser'" />
-              <icon-settings v-else-if="card.icon === 'permission'" />
-              <icon-user-group v-else />
+              <Users v-if="card.icon === 'role'" :size="24" />
+              <User v-else-if="card.icon === 'adminUser'" :size="24" />
+              <Settings v-else-if="card.icon === 'permission'" :size="24" />
+              <Users v-else :size="24" />
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ card.value }}</div>
@@ -35,6 +35,7 @@
 
 <script lang="ts" setup>
   import { computed, ref, onMounted } from 'vue';
+  import { Settings, User, Users } from '@lucide/vue';
   import { useUserStore } from '@/store';
   import { useI18n } from 'vue-i18n';
   import { getDashboardStats } from '@/api/dashboard';
@@ -93,9 +94,9 @@
 
   onMounted(async () => {
     try {
-      const res = await getDashboardStats();
-      if (res.data) {
-        stats.value = res.data;
+      const result = await getDashboardStats();
+      if (result) {
+        stats.value = result;
       }
     } catch {
       // 静默处理，保留默认值 0

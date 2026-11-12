@@ -1,9 +1,12 @@
 ---
 name: new-page-workflow-rule
-description: 新增业务页面时的完整流程规范，确保权限、后端接口、前端页面、locale 文案同步创建，避免遗漏。
-alwaysApply: true
-version: 1.0
-last_verified: 2026-08-12
+description: 新增业务页面五步流程——seed.ts 加权限 → 重跑 db:seed → Controller 加 @RequirePermission → 前端建页面/api/locale → 聚合 locale 导入。新增模块、新增菜单、添加带权限的页面或接口时使用。
+alwaysApply: false
+version: 1.2
+owner: 雷敏
+created: 2026-08-12
+updated: 2026-11-11
+last_verified: 2026-11-11
 verified_against:
   - 'NestJS ^10.3.0'
   - 'Prisma 5.22.0'
@@ -14,7 +17,7 @@ verified_against:
 # 新增业务页面完整流程规范
 
 > **适用范围**：后台管理系统模板中所有新增业务页面（如后台用户管理、会员管理等）
-> **加载方式**：始终加载
+> **加载方式**：按需加载
 
 ---
 
@@ -55,7 +58,7 @@ cd apps/server
 pnpm db:seed
 ```
 
-> 注意：seed 会清空权限表并重建，不影响用户和角色数据。
+> 注意：seed 为幂等增量同步，按 `name` 覆盖 seed 中定义条目的字段，不删除数据；会覆盖后台手工改过的 icon / path / sort。
 
 ### 第 3 步：后端 Controller 添加接口 + 权限装饰器
 
@@ -75,6 +78,8 @@ async create() { ... }
 > 权限码必须与 seed.ts 中定义的 `permission` 字段完全一致。
 
 ### 第 4 步：前端创建页面组件 + API 文件 + locale
+
+> 页面骨架（`.container` / `Breadcrumb` / `general-card` / 筛选行 / `BasicTable`）按 `page-skeleton-rule` 五段结构写。
 
 | 必须创建的文件                        | 说明                                    |
 | ------------------------------------- | --------------------------------------- |

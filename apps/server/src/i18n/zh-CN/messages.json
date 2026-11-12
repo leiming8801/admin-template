@@ -6,6 +6,10 @@
     "accountDisabled": "账号已禁用，请联系管理员",
     "roleDisabled": "所属角色已被禁用，请联系管理员",
     "refreshTokenInvalid": "刷新令牌无效，请重新登录",
+    "refreshTokenReused": "检测到登录状态异常，请重新登录",
+    "sessionInvalid": "登录会话已失效，请重新登录",
+    "oldPasswordIncorrect": "当前密码不正确",
+    "newPasswordSame": "新密码不能与当前密码相同",
     "invalidTokenType": "Token 类型无效",
     "invalidTokenScope": "Token 范围无效"
   },

@@ -7,6 +7,7 @@ dist/
 .output/
 .nuxt/
 turbo/
+.turbo/
 
 # Environment
 .env
@@ -23,13 +24,14 @@ turbo/
 .DS_Store
 Thumbs.db
 
+# Temp（AI 与本地临时产物，规则见 .qoder/rules/collaboration-boundary-rule.md）
+.tmp/
+
 # Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 
-# Prisma
-apps/server/prisma/migrations/
 
 # Test
 coverage/

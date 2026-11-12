@@ -1,5 +1,23 @@
 import { RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/store';
+
+/**
+ * 权限名称展示：权限 name 字段存的是 i18n key（如 menu.system.adminUser），
+ * 有翻译时显示翻译文案，没有翻译时回退显示原始值
+ *
+ * 注意：不能用 te() 判断，vue-i18n 9.x 的 te() 对扁平点号 key 会返回 false，
+ * 所以直接在当前语言的 messages 上做存在性判断
+ */
+export function usePermissionLabel() {
+  const { t, getLocaleMessage, locale } = useI18n();
+  return (name?: string) => {
+    if (!name) return '-';
+    const messages = getLocaleMessage(locale.value) as Record<string, unknown>;
+    const hasMessage = Object.prototype.hasOwnProperty.call(messages, name);
+    return hasMessage ? t(name) : name;
+  };
+}
 
 export default function usePermission() {
   const userStore = useUserStore();

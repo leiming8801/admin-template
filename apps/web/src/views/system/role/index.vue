@@ -18,7 +18,7 @@
             type="primary"
             @click="handleAdd"
           >
-            <template #icon><icon-plus /></template>
+            <template #icon><Plus :size="16" /></template>
             {{ $t('system.role.add') }}
           </a-button>
         </a-col>
@@ -115,6 +115,7 @@
 
 <script lang="ts" setup>
   import { ref, computed } from 'vue';
+  import { Plus } from '@lucide/vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
@@ -146,12 +147,12 @@
     },
     ajax: {
       query: async ({ page }) => {
-        const res = await fetchRoles({
+        const result = await fetchRoles({
           page: page.currentPage,
           pageSize: page.pageSize,
           name: searchName.value || undefined,
         });
-        return { list: res.data.list, total: res.data.total };
+        return { list: result.list, total: result.total };
       },
     },
   }));

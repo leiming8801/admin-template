@@ -3,6 +3,10 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 export interface JwtPayload {
   sub: number;
   username: string;
+  /** 服务端会话 ID，Access/Refresh Token 均必须携带 */
+  sid: string;
+  /** 单次 Token ID，Refresh Token 轮换时重新生成 */
+  jti?: string;
   type: 'access' | 'refresh';
   scope?: string;
 }

@@ -24,11 +24,12 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql
+    env_file:
+      - apps/server/.env
     environment:
+      NODE_ENV: production
       DATABASE_URL: 'mysql://root:root123456@mysql:3306/admin_template'
-      JWT_SECRET: 'your-jwt-secret-key-change-in-production'
       JWT_ACCESS_EXPIRES: '2h'
-      JWT_REFRESH_SECRET: 'your-refresh-secret-key-change-in-production'
       JWT_REFRESH_EXPIRES: '7d'
       PORT: 3000
     ports:

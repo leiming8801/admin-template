@@ -24,5 +24,5 @@ export default {
   'system.profile.confirmPasswordPlaceholder': '请再次输入新密码',
   'system.profile.confirmPasswordRequired': '请再次输入新密码',
   'system.profile.passwordMismatch': '两次输入的密码不一致',
-  'system.profile.passwordChanged': '密码修改成功',
+  'system.profile.passwordChanged': '密码修改成功，请重新登录'
 };

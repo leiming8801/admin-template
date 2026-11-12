@@ -16,12 +16,12 @@
         class="arco-icon-hover arco-tag-icon-hover arco-icon-hover-size-medium arco-tag-close-btn"
         @click.stop="tagClose(itemData, index)"
       >
-        <icon-close />
+        <X :size="12" />
       </span>
     </span>
     <template #content>
       <a-doption :disabled="disabledReload" :value="Eaction.reload">
-        <icon-refresh />
+        <RotateCw :size="14" />
         <span>重新加载</span>
       </a-doption>
       <a-doption
@@ -29,11 +29,11 @@
         :disabled="disabledCurrent"
         :value="Eaction.current"
       >
-        <icon-close />
+        <X :size="14" />
         <span>关闭当前标签页</span>
       </a-doption>
       <a-doption :disabled="disabledLeft" :value="Eaction.left">
-        <icon-to-left />
+        <ArrowLeft :size="14" />
         <span>关闭左侧标签页</span>
       </a-doption>
       <a-doption
@@ -41,15 +41,15 @@
         :disabled="disabledRight"
         :value="Eaction.right"
       >
-        <icon-to-right />
+        <ArrowRight :size="14" />
         <span>关闭右侧标签页</span>
       </a-doption>
       <a-doption :value="Eaction.others">
-        <icon-swap />
+        <ArrowLeftRight :size="14" />
         <span>关闭其它标签页</span>
       </a-doption>
       <a-doption :value="Eaction.all">
-        <icon-folder-delete />
+        <Trash2 :size="14" />
         <span>关闭全部标签页</span>
       </a-doption>
     </template>
@@ -59,6 +59,14 @@
 <script lang="ts" setup>
   import { PropType, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
+  import {
+    ArrowLeft,
+    ArrowLeftRight,
+    ArrowRight,
+    RotateCw,
+    Trash2,
+    X,
+  } from '@lucide/vue';
   import { useTabBarStore } from '@/store';
   import type { TagProps } from '@/store/modules/tab-bar/types';
   import { DEFAULT_ROUTE_NAME, REDIRECT_ROUTE_NAME } from '@/router/constants';

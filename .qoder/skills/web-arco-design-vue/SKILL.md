@@ -1,9 +1,23 @@
 ---
-name: arco-design-vue
-description: "Arco Design Vue UI 组件库参考，面向 Vue 3 和 `@arco-design/web-vue`。当用户要求构建 Vue 页面、创建 Vue UI、使用 Arco Vue 编写前端代码、开发 Vue 仪表盘或应用，或提到 Arco Design Vue、`@arco-design/web-vue`、`a-button`、`a-table`、`a-form`、`a-modal`、`a-select`、`Message`、任意 Arco Vue 组件名时使用。覆盖安装、全局注册、按需加载、主题、国际化、Vue 3 Composition API 约定、组件属性/事件/插槽、示例、表单、表格、弹窗、导航、数据录入、数据展示、反馈和响应式布局。"
+name: web-arco-design-vue
+description: "（仅 apps/web）Arco Design Vue UI 组件库参考，面向 Vue 3 和 `@arco-design/web-vue`。当用户要求构建 Vue 页面、创建 Vue UI、使用 Arco Vue 编写前端代码、开发 Vue 仪表盘或应用，或提到 Arco Design Vue、`@arco-design/web-vue`、`a-button`、`a-table`、`a-form`、`a-modal`、`a-select`、`Message`、任意 Arco Vue 组件名时使用。覆盖安装、全局注册、按需加载、主题、国际化、Vue 3 Composition API 约定、组件属性/事件/插槽、示例、表单、表格、弹窗、导航、数据录入、数据展示、反馈和响应式布局。"
+owner: 雷敏
+created: 2026-08-11
+updated: 2026-11-11
 ---
 
-# Arco Design Vue Skill
+# Arco Design Vue Skill（apps/web）
+
+> **本仓覆盖约定（优先级最高）**：`references/` 是 Arco 官方用法参考，与本仓规则冲突时**以本仓规则为准**：
+>
+> | 场景 | 本仓做法 | 冲突来源 |
+> |---|---|---|
+> | 业务数据表格 | 必须用 `<BasicTable>`（VxeTable 封装），**禁止 `<a-table>`** | `references/components/data-display/table.md` 全篇均为 `a-table` 示例 |
+> | 表格列配置 | VxeTable 格式：`field` / `slots: { default }`，不是 `dataIndex` / `slotName` | 同上 |
+> | 用户可见文案 | 必须走 i18n 的 `$t()`，禁止硬编码中文 | `references/` 中大量硬编码示例 |
+> | 图标 | 只能从 `@lucide/vue` 引入（如 `<Plus :size="16" />`），**禁止 Arco 图标与全局图标注册** | 本文件下文「图标从图标入口导入」及 `references/components/general/icon.md` |
+>
+> 详见 `vxe-table-rule`、`i18n-rule` 与 `icon-usage-rule`。`references` 的表格章节仅作**属性名与插槽名**参考，不要整段照抄。
 
 `@arco-design/web-vue` 是 Arco Design 的 Vue 3 组件库实现。
 
@@ -26,7 +40,7 @@ app.mount('#app');
 ```
 
 - 组件与服务从根包导入：`import { Button, Table, Form, Message } from '@arco-design/web-vue'`。
-- 图标从图标入口导入：`import { IconSearch, IconPlus } from '@arco-design/web-vue/es/icon'`。
+- 图标**不**走 Arco 图标入口：本仓全站图标统一用 `import { Plus } from '@lucide/vue'`（见上方覆盖约定）。
 - 样式完整引入使用 `@arco-design/web-vue/dist/arco.css`。手动按需引入时使用组件样式，例如 `@arco-design/web-vue/es/button/style/css.js`。
 - 默认全局组件标签使用 `a-` 前缀：`<a-button>`、`<a-table>`、`<a-form>`、`<a-form-item>`。
 - 模板中的属性使用 kebab-case：`html-type`、`show-jumper`、`row-selection`。

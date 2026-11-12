@@ -49,7 +49,7 @@
             type="primary"
             @click="handleAdd"
           >
-            <template #icon><icon-plus /></template>
+            <template #icon><Plus :size="16" /></template>
             {{ $t('system.adminUser.add') }}
           </a-button>
         </a-col>
@@ -166,6 +166,7 @@
 
 <script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue';
+  import { Plus } from '@lucide/vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
@@ -200,8 +201,8 @@
   onMounted(async () => {
     // 加载角色下拉选项
     try {
-      const res = await fetchAllRoles();
-      roleOptions.value = res.data;
+      const result = await fetchAllRoles();
+      roleOptions.value = result;
     } catch {
       // interceptor 已处理
     }
@@ -223,14 +224,14 @@
     },
     ajax: {
       query: async ({ page }) => {
-        const res = await fetchAdminUsers({
+        const result = await fetchAdminUsers({
           page: page.currentPage,
           pageSize: page.pageSize,
           username: searchUsername.value || undefined,
           status: searchStatus.value,
           roleId: searchRoleId.value,
         });
-        return { list: res.data.list, total: res.data.total };
+        return { list: result.list, total: result.total };
       },
     },
   }));

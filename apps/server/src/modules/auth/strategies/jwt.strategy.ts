@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { config } from '../../../config';
+import { ConfigService } from '@nestjs/config';
 import { AUTH_CONSTANTS } from '../auth.constants';
+import { AuthSessionService } from '../auth-session.service';
 import { JwtPayload } from '../../../common/decorators/current-user.decorator';
 
 /**
@@ -10,11 +11,14 @@ import { JwtPayload } from '../../../common/decorators/current-user.decorator';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, AUTH_CONSTANTS.JWT_STRATEGY) {
-  constructor() {
+  constructor(
+    configService: ConfigService,
+    private readonly authSessionService: AuthSessionService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.jwt.secret,
+      secretOrKey: configService.getOrThrow<string>('jwt.secret'),
     });
   }
 
@@ -29,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, AUTH_CONSTANTS.JWT_S
     if (payload.scope && payload.scope !== AUTH_CONSTANTS.SCOPE_ADMIN) {
       throw new UnauthorizedException('auth.invalidTokenScope');
     }
+    await this.authSessionService.validateAccessSession(payload);
     return payload;
   }
 }

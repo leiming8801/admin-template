@@ -6,6 +6,7 @@
   import { useAppStore } from '@/store';
   import { listenerRouteChange } from '@/utils/route-listener';
   import { openWindow, regexUrl } from '@/utils';
+  import { resolveMenuIcon } from '@/utils/icons';
   import useMenuTree from './use-menu-tree';
 
   export default defineComponent({
@@ -93,19 +94,11 @@
         function travel(_route: RouteRecordRaw[], nodes = []) {
           if (_route) {
             _route.forEach((element) => {
-              // 支持 Arco Design 图标和 IconPark 第三方图标混用
-              // Arco 图标：icon-xxx（直接作为 Vue 组件渲染）
-              // IconPark 图标：iconpark:xxx（渲染为 Web Component <iconpark-icon>）
-              const iconStr = element?.meta?.icon;
-              let icon = null;
-              if (iconStr) {
-                if (iconStr.startsWith('iconpark:')) {
-                  const iconName = iconStr.substring(9);
-                  icon = () => h('iconpark-icon', { name: iconName, size: '18px' });
-                } else {
-                  icon = () => h(compile(`<${iconStr}/>`));
-                }
-              }
+              // 菜单图标统一走 Lucide：权限表存 Lucide kebab-case 名，
+              // 由 @/utils/icons 的注册表解析成组件；未注册的名字不渲染图标
+              const iconComp = resolveMenuIcon(element?.meta?.icon as string);
+              // 尺寸必须在渲染处给：Lucide 默认 24，且它的 class 是 .lucide（没有 .lucide-icon）
+              const icon = iconComp ? () => h(iconComp, { size: 18 }) : null;
               const node =
                 element?.children && element?.children.length !== 0 ? (
                   <a-sub-menu
@@ -165,8 +158,8 @@
         font-size: 18px;
       }
     }
-    // IconPark 第三方图标样式对齐 Arco 图标
-    iconpark-icon {
+    // Lucide 图标只负责继承颜色，尺寸由 h(iconComp, { size }) 控制
+    svg.lucide {
       color: inherit;
     }
   }

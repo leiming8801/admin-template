@@ -161,6 +161,7 @@
   import { useUserStore } from '@/store';
   import { resolveAvatar } from '@/utils/avatar';
   import { updateProfile, updatePassword } from '@/api/user';
+  import { redirectToLogin } from '@/api/interceptor';
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -246,7 +247,9 @@
         newPassword: passwordFormData.newPassword,
       });
       Message.success(t('system.profile.passwordChanged'));
-      resetPassword();
+      // 后端已撤销该用户全部会话，本地直接清理并返回登录页。
+      userStore.logoutCallBack();
+      redirectToLogin();
     } catch {
       // interceptor 已处理
     } finally {

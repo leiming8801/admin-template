@@ -62,11 +62,11 @@ const useUserStore = defineStore('user', {
 
     /** 获取当前用户信息 + 角色权限 */
     async info() {
-      const res = await getUserInfo();
-      const data = { ...res.data } as Partial<UserState> & {
+      const profile = await getUserInfo();
+      const data: Partial<UserState> & {
         roles?: string[];
         permissions?: string[];
-      };
+      } = { ...profile };
       if (!data.avatar) {
         data.avatar = resolveAvatar(undefined);
       }
@@ -88,9 +88,9 @@ const useUserStore = defineStore('user', {
 
     async login(loginForm: LoginData) {
       try {
-        const res = await userLogin(loginForm);
-        setToken(res.data.accessToken);
-        setRefreshToken(res.data.refreshToken);
+        const result = await userLogin(loginForm);
+        setToken(result.accessToken);
+        setRefreshToken(result.refreshToken);
       } catch (err) {
         clearToken();
         throw err;

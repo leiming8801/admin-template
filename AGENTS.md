@@ -14,7 +14,7 @@
 |---|---|---|
 | 前端框架 | Vue 3 + TypeScript | Vue 3.4+ |
 | UI 组件库 | Arco Design Pro (Vue) + VxeTable | Arco 2.55+ |
-| 第三方图标 | IconPark (ByteDance) | CDN Web Component |
+| 图标库 | Lucide (`@lucide/vue`) | 官方 Vue 包，tree-shakable SVG |
 | 构建工具 | Vite | 5+ |
 | 状态管理 | Pinia | 2+ |
 | 路由 | Vue Router | 4+ |
@@ -32,58 +32,14 @@
 
 ## 3. 工程结构
 
-```
-admin-template/
-├── apps/
-│   ├── server/                    # NestJS 后端
-│   │   ├── prisma/
-│   │   │   ├── schema.prisma     # 数据模型定义
-│   │   │   └── seed.ts            # 种子数据
-│   │   ├── src/
-│   │   │   ├── common/            # 装饰器、守卫、过滤器、拦截器、工具
-│   │   │   ├── config/            # 环境变量配置
-│   │   │   ├── i18n/              # 后端多语言（zh-CN / en-US）
-│   │   │   ├── modules/
-│   │   │   │   ├── auth/          # 认证模块（登录/刷新/用户信息/动态菜单）
-│   │   │   │   ├── system/        # 系统管理（后台用户/角色/权限）
-│   │   │   │   ├── member/        # 会员管理
-│   │   │   │   └── dashboard/     # 工作台统计
-│   │   │   ├── prisma/            # PrismaService 全局注入
-│   │   │   ├── app.module.ts      # 根模块
-│   │   │   └── main.ts           # 启动入口（CORS / Swagger / 全局管道）
-│   │   └── package.json
-│   └── web/                       # Vue3 前端
-│       ├── src/
-│       │   ├── api/                # Axios 请求封装 + 拦截器
-│       │   ├── components/        # 公共组件（表格/菜单/导航栏/标签栏等）
-│       │   ├── config/            # 应用配置 settings.json
-│       │   ├── directive/         # v-permission 权限指令
-│       │   ├── hooks/             # 组合式函数（权限/语言/用户）
-│       │   ├── layout/            # 布局组件
-│       │   ├── locale/            # 前端多语言聚合
-│       │   ├── router/            # 路由 + 守卫 + 动态路由
-│       │   ├── store/             # Pinia（user / app / tab-bar）
-│       │   ├── utils/             # 工具函数（Token/头像/菜单转换等）
-│       │   ├── views/             # 页面（login/dashboard/system/member/profile）
-│       │   ├── App.vue
-│       │   └── main.ts            # 前端启动入口
-│       └── package.json
-├── packages/
-│   └── shared/                    # 前后端共享类型定义
-│       └── src/
-│           ├── index.ts           # 统一导出
-│           ├── common.ts          # ApiResponse / PageQuery / PageResult / 枚举
-│           ├── auth.ts            # LoginResult / UserProfile / MenuItem
-│           ├── system.ts          # AdminUser / Role / Permission 及 DTO
-│           ├── member.ts          # Member 及 DTO
-│           └── dashboard.ts       # DashboardStats
-├── docs/                          # 项目文档（中文命名，含系统设计文档）
-├── docker-compose.yml             # MySQL + Server + Web 容器编排
-├── turbo.json                     # turbo 构建任务配置
-├── pnpm-workspace.yaml            # workspace 声明
-├── AGENTS.md                      # AI 编码助手上下文指南
-└── package.json                   # 根 package.json（turbo 脚本入口）
-```
+pnpm workspace monorepo，三个包：`apps/server`（NestJS 后端）、`apps/web`（Vue 3 前端）、`packages/shared`（前后端共享类型）。
+
+完整目录树（含各子目录职责）与包依赖关系见 [项目架构概览](docs/项目架构概览.md) 第 2 节「Monorepo 结构」。
+
+跨包硬约束（细节见上方文档）：
+
+- 前端经 Vite alias 直接引用 shared 源码，后端经 `workspace:*` 引用其 `dist/` → 改 shared 后必须 `pnpm build`
+- `apps/*` 下不单独建 `.qoder`，AI 资产全在仓库根（见 §10）
 
 ## 4. 核心约定
 
@@ -103,6 +59,7 @@ admin-template/
 - **响应格式**：全局 `TransformInterceptor` 自动包装为 `{ code: 200, message: 'success', data }`，Controller 直接返回业务数据即可
 - **分页约定**：返回 `{ list, total, page, pageSize }`，查询参数用 `page` / `pageSize`
 - **密码加密**：使用 `bcryptjs`，hash 轮数 10
+- **认证会话**：双 Token 必须携带 `sid`；`admin_session` 只保存 Refresh Token 的 SHA-256 哈希，刷新必须轮换双 Token，登出/改密/重置密码/禁用用户必须撤销对应会话
 - **超级管理员**：`super_admin` 角色绕过所有权限校验（前后端均有此逻辑）
 
 ### 4.3 前端编码约定
@@ -114,13 +71,13 @@ admin-template/
   - 路由级：`router/guard/permission.ts` 中的 `accessRouter()` 校验 `meta.roles` 或 `meta.requiresPermission`
   - 按钮级：`v-permission="'system:user:add'"` 指令，无权限的元素从 DOM 移除
 - **i18n 同步**：请求拦截器自动设置 `Accept-Language` 头与前端当前语言同步
-- **401 处理**：拦截器自动用 refreshToken 刷新 accessToken 并重发请求；刷新失败跳转登录页
+- **401 处理**：拦截器自动轮换 accessToken + refreshToken，两个新值都必须写入 localStorage 后重发请求；刷新失败跳转登录页
 - **视图组件懒加载**：`import.meta.glob('@/views/**/*.vue')` 预加载，动态路由按 `component` 字段匹配
-- **菜单图标混用**：Arco Design 图标和 IconPark 第三方图标混用，通过前缀区分
-  - Arco 图标：`icon-xxx`（如 `icon-dashboard`），作为 Vue 组件渲染
-  - IconPark 图标：`iconpark:xxx`（如 `iconpark:dashboard`），渲染为 Web Component `<iconpark-icon>`
-  - IconPark CDN 脚本在 `index.html` 中引入，Vite 配置 `isCustomElement` 识别 `iconpark-icon` 标签
-  - 图标渲染逻辑在 `components/menu/index.vue` 中，根据前缀自动选择渲染方式
+- **图标统一用 Lucide**：全站图标只从 `@lucide/vue` 引入，禁止新增 IconPark / Arco 图标（`ArcoVueIcon` 已从 `main.ts` 移除）
+  - 页面内直接用：`import { Plus } from '@lucide/vue'` → `<Plus :size="16" />`，`size` 显式声明，颜色继承 `currentColor`
+  - 菜单图标：`seed.ts` 的 `icon` 字段存 Lucide 官方 **kebab-case 名**（如 `layout-dashboard`、`users`），无任何前缀
+  - 字符串转组件：只能经 `src/utils/icons.ts` 的 `menuIconMap` 白名单 + `resolveMenuIcon()`，**禁止** `import * as icons` 动态索引（会打包全部 7000+ 图标）
+  - 新增菜单图标：先在 https://lucide.dev/icons 确认名称存在，再在 `menuIconMap` 注册，权限表单下拉会自动出现该项
 
 ### 4.4 共享类型约定
 
@@ -144,8 +101,11 @@ pnpm build:web            # 仅前端
 
 # 数据库
 pnpm db:generate          # 生成 Prisma Client
-pnpm db:push              # 同步 Schema 到数据库
-pnpm db:seed              # 填充种子数据
+pnpm db:migrate:dev       # 开发环境生成并执行迁移
+pnpm db:migrate:deploy    # 测试/生产执行已提交迁移
+pnpm db:migrate:status    # 查看迁移状态
+pnpm db:push              # 临时原型同步（不生成迁移，禁止用于生产）
+pnpm db:seed              # 增量同步种子数据（幂等，可重复执行）
 
 # 其他
 pnpm lint                 # 代码检查
@@ -170,7 +130,7 @@ pnpm clean                # 清理 dist 和 node_modules
 
 | 变量 | 说明 | 默认值 |
 |---|---|---|
-| `VITE_API_BASE_URL` | 前端 API 地址 | `http://localhost:3000/api` |
+| `VITE_API_BASE_URL` | 后端服务源地址（不含 `/api`，代理时留空） | `http://localhost:3000` |
 
 ## 7. 默认账户
 
@@ -203,4 +163,28 @@ pnpm clean                # 清理 dist 和 node_modules
 4. **异常消息**：throw 时传 i18n key 而非中文文案，在 `src/i18n/zh-CN/messages.json` 和 `en-US/messages.json` 中添加翻译
 5. **前端权限**：页面级用路由 `meta.requiresPermission`，按钮级用 `v-permission` 指令
 6. **共享类型改动**：修改后执行 `pnpm build`（shared 包）使后端生效
-7. **Prisma Schema 改动**：修改 `schema.prisma` 后执行 `pnpm db:push` 同步，再 `pnpm db:generate` 更新 Client
+7. **Prisma Schema 改动**：修改 `schema.prisma` 后执行 `pnpm db:migrate:dev` 生成并应用迁移，提交 `prisma/migrations/`；测试/生产只用 `pnpm db:migrate:deploy`。既有 `db push` 数据库先按部署文档基线化
+
+## 10. AI 资产（`.qoder/`）
+
+> 详细内容由工具按需加载，此处只作索引；新增或修改资产见 `write-rule-skill` / `write-agentmd-skill`。
+> **落点原则**：全仓只有一个 `.qoder/`（仓库根）。资产按「通用性」切分，不按 app 目录切分——`apps/*` 下不单独建 `.qoder`，因为会话以仓库根为加载边界，子目录资产不会生效。app 专属资产也放根目录，靠 `description` 与下方「适用范围」圈定。
+> **适用范围写法**：只允许写具体目录（`apps/web`、`apps/server`、`packages/shared`）或 `全仓`，不用「仅」「相关」这类模糊词；新增 app 时（如未来的 `apps/miniapp`）在每个受影响的资产上逐个补齐，不靠模型猜。
+
+**规则 13 条**（6 常驻 / 7 按需），按作用域分组：
+
+| 作用域 | 常驻 | 按需 |
+|---|---|---|
+| 全仓 | `intellectual-honesty-rule`、`operation-safety-rule`、`collaboration-boundary-rule`、`windows-encoding-rule`、`reuse-first-rule` | `docs-organization-rule`、`author-identity-rule` |
+| `apps/web` | `i18n-rule` | `page-skeleton-rule`、`modal-style-rule` |
+| `apps/web` + `apps/server` | — | `vxe-table-rule`（前端表格 + 后端日期格式）、`icon-usage-rule`（前端图标 + `seed.ts`）、`new-page-workflow-rule`（跨端五步） |
+
+| 技能 | 适用范围 | 使用场景 |
+|---|---|---|
+| `code-review-skill` | 全仓 | 合入前评审：变更范围 / 契约一致性 / 逻辑 / 全链路 / 验证，P0–P3 分级 |
+| `powershell-skill` | 全仓 | Windows 命令与脚本陷阱（编码、`$LASTEXITCODE`、分号、`curl.exe`） |
+| `windows-encoding-skill` | 全仓 | 编码诊断、修复、UTF-8 无 BOM 写入脚本 |
+| `doc-sync-skill` | 全仓 | 文档与代码漂移的最小同步 |
+| `write-rule-skill` | 全仓 | 新增或修改 `.qoder/rules` 规则 |
+| `write-agentmd-skill` | 全仓 | 维护本文件（地图而非手册，≤200 行） |
+| `web-arco-design-vue` | `apps/web` | Arco 组件属性/事件/插槽/示例；**表格章节仅作属性名参考，业务表格走 `BasicTable`** |

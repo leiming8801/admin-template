@@ -92,6 +92,14 @@ body {
   }
 }
 
+/* Lucide 图标基础排版：与文字基线对齐，避免 flex 布局下被压缩
+   （@lucide/vue 生成的 class 是 .lucide，不是 .lucide-icon） */
+svg.lucide {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: -0.15em;
+}
+
 /* VxeTable 主题变量映射到 Arco 设计令牌 */
 :root {
   --vxe-ui-font-secondary-color: var(--color-text-3);

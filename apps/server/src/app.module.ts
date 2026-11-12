@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_FILTER } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { I18nModule } from 'nestjs-i18n';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -10,9 +11,19 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { i18nOptions } from './i18n/i18n.config';
+import configuration from './config';
+import { validateEnvironment } from './config/validation';
 
 @Module({
   imports: [
+    // 环境变量加载与启动校验
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      envFilePath: ['apps/server/.env', '.env'],
+      load: [configuration],
+      validate: validateEnvironment,
+    }),
     // i18n 多语言
     I18nModule.forRoot(i18nOptions),
     // Prisma 全局数据库

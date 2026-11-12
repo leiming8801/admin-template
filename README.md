@@ -19,7 +19,7 @@
 |---|---|---|
 | 前端框架 | Vue 3 + TypeScript | 3.4+ |
 | UI 组件库 | Arco Design Pro (Vue) + VxeTable | 2.55+ |
-| 第三方图标 | IconPark (ByteDance) | CDN Web Component |
+| 图标库 | Lucide (`@lucide/vue`) | 1.72+ |
 | 构建工具 | Vite | 5+ |
 | 状态管理 | Pinia | 2+ |
 | 路由 | Vue Router | 4+ |
@@ -41,7 +41,7 @@ admin-template/
 ├── apps/
 │   ├── server/                    # NestJS 后端
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma     # 数据库模型定义（6 张表）
+│   │   │   ├── schema.prisma     # 数据库模型定义（7 张表）
 │   │   │   └── seed.ts            # 种子数据（管理员+角色+权限菜单）
 │   │   ├── src/
 │   │   │   ├── common/            # 装饰器 / 守卫 / 过滤器 / 拦截器
@@ -78,6 +78,7 @@ admin-template/
 │           ├── member.ts          # Member
 │           └── dashboard.ts       # DashboardStats
 ├── docs/                          # 项目文档（中文命名，含系统设计文档）
+├── .qoder/                        # AI 资产：rules + skills
 ├── docker-compose.yml             # MySQL + Server + Web 容器编排
 ├── turbo.json                     # turbo 构建任务配置
 ├── pnpm-workspace.yaml            # workspace 声明
@@ -103,7 +104,7 @@ pnpm install
 
 ```bash
 cp .env.example apps/server/.env
-# 按需修改 .env 中的 JWT_SECRET、DATABASE_URL 等
+# 设置 DATABASE_URL；部署生产环境前必须替换两个示例 JWT 密钥
 ```
 
 ### 3. 初始化数据库
@@ -115,8 +116,8 @@ docker compose up mysql -d
 # 创建数据库
 mysql -u root -p -e "CREATE DATABASE admin_template CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 同步 Prisma Schema 到数据库
-pnpm db:push
+# 执行已提交迁移（适用于全新数据库；既有 db push 数据库先见部署文档基线化）
+pnpm db:migrate:deploy
 
 # 生成 Prisma Client
 pnpm db:generate
@@ -163,8 +164,11 @@ pnpm dev:web       # 前端 http://localhost:5173
 | `pnpm build:server` | 仅构建后端 |
 | `pnpm build:web` | 仅构建前端 |
 | `pnpm db:generate` | 生成 Prisma Client |
-| `pnpm db:push` | 同步 Schema 到数据库 |
-| `pnpm db:seed` | 填充种子数据 |
+| `pnpm db:migrate:dev` | 开发环境生成并执行迁移 |
+| `pnpm db:migrate:deploy` | 测试/生产执行已提交迁移 |
+| `pnpm db:migrate:status` | 查看迁移状态 |
+| `pnpm db:push` | 临时原型同步，不生成迁移，禁止用于生产 |
+| `pnpm db:seed` | 增量同步种子数据（幂等，可重复执行） |
 | `pnpm lint` | 代码检查 |
 | `pnpm clean` | 清理 dist 和 node_modules |
 
@@ -173,13 +177,14 @@ pnpm dev:web       # 前端 http://localhost:5173
 ### 认证（JWT 双 Token）
 
 - 登录返回 `accessToken`（2h 有效）和 `refreshToken`（7d 有效）
-- `accessToken` 过期时，前端拦截 401 响应，自动用 `refreshToken` 刷新并重发请求
-- 刷新失败（refreshToken 过期）跳转登录页
+- `accessToken` 过期时，前端拦截 401 响应，自动轮换双 Token 并重发请求
+- 服务端保存会话及 Refresh Token 哈希；旧 Token 重放、登出、改密或禁用用户会使会话失效
+- 刷新失败（Token 过期、会话撤销或重放）跳转登录页
 - 管理员和 C端会员 JWT 使用独立密钥，互不通用（C端为预留设计）
 
 ### RBAC 权限控制
 
-- **数据模型**：用户-角色-权限三级关联（5 张表 + 1 张会员表）
+- **数据模型**：用户-角色-权限三级关联（5 张 RBAC 表 + 1 张会话表 + 1 张会员表）
 - **后端**：`@RequirePermission` 装饰器声明权限码 + `PermissionGuard` 全局守卫校验
 - **前端路由级**：路由守卫 `accessRouter()` 校验 `meta.roles` 或 `meta.requiresPermission`
 - **前端按钮级**：`v-permission="'system:user:add'"` 指令，无权限移除元素
@@ -219,18 +224,23 @@ pnpm dev:web       # 前端 http://localhost:5173
 
 | 变量 | 说明 | 默认值 |
 |---|---|---|
-| `DATABASE_URL` | MySQL 连接字符串 | `mysql://root:root123456@localhost:3306/admin_template` |
-| `JWT_SECRET` | 管理员 accessToken 密钥 | - |
+| `NODE_ENV` | 运行环境（必填）：`development` / `test` / `production` | - |
+| `DATABASE_URL` | MySQL 连接字符串（必填） | - |
+| `JWT_SECRET` | 管理员 accessToken 密钥，至少 32 字符且不能与 refresh 密钥相同 | - |
 | `JWT_ACCESS_EXPIRES` | accessToken 有效期 | `2h` |
-| `JWT_REFRESH_SECRET` | refreshToken 密钥 | - |
+| `JWT_REFRESH_SECRET` | refreshToken 密钥，至少 32 字符且不能使用生产占位值 | - |
 | `JWT_REFRESH_EXPIRES` | refreshToken 有效期 | `7d` |
 | `JWT_MEMBER_*` | C端会员 JWT（预留） | - |
 | `PORT` | 后端端口 | `3000` |
-| `VITE_API_BASE_URL` | 前端 API 地址 | `http://localhost:3000/api` |
+| `CORS_ORIGIN` | 允许的前端来源 | `http://localhost:5173` |
+| `VITE_API_BASE_URL` | 后端服务源地址（不含 `/api`，代理时留空） | `http://localhost:3000` |
+
+配置不完整或密钥不符合要求时，后端会拒绝启动；示例中的开发 JWT 密钥不能用于生产环境。
 
 ## Docker 部署
 
 ```bash
+# 先配置 apps/server/.env，并替换两个示例 JWT 密钥
 # 一键启动所有服务（MySQL + 后端 + 前端）
 docker compose up -d
 

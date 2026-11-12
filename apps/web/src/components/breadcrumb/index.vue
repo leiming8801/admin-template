@@ -1,7 +1,7 @@
 <template>
   <a-breadcrumb class="container-breadcrumb">
     <a-breadcrumb-item>
-      <icon-apps />
+      <LayoutGrid :size="14" />
     </a-breadcrumb-item>
     <a-breadcrumb-item v-for="item in items" :key="item">
       {{ $t(item) }}
@@ -11,6 +11,7 @@
 
 <script lang="ts" setup>
   import { PropType } from 'vue';
+  import { LayoutGrid } from '@lucide/vue';
 
   defineProps({
     items: {

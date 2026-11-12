@@ -9,9 +9,10 @@
         >
           {{ $t('navbar.title') }}
         </a-typography-title>
-        <icon-menu-fold
+        <MenuIcon
           v-if="!topMenu && appStore.device === 'mobile'"
-          style="font-size: 22px; cursor: pointer"
+          :size="22"
+          style="cursor: pointer"
           @click="toggleDrawerMenu"
         />
       </a-space>
@@ -29,7 +30,7 @@
             @click="setDropDownVisible"
           >
             <template #icon>
-              <icon-language />
+              <Languages :size="16" />
             </template>
           </a-button>
         </a-tooltip>
@@ -42,7 +43,7 @@
               :value="item.value"
             >
               <template #icon>
-                <icon-check v-show="item.value === currentLocale" />
+                <Check v-show="item.value === currentLocale" :size="16" />
               </template>
               {{ item.label }}
             </a-doption>
@@ -64,8 +65,8 @@
             @click="handleToggleTheme"
           >
             <template #icon>
-              <icon-moon-fill v-if="theme === 'dark'" />
-              <icon-sun-fill v-else />
+              <Moon v-if="theme === 'dark'" :size="16" />
+              <Sun v-else :size="16" />
             </template>
           </a-button>
         </a-tooltip>
@@ -85,8 +86,8 @@
             @click="toggleFullScreen"
           >
             <template #icon>
-              <icon-fullscreen-exit v-if="isFullscreen" />
-              <icon-fullscreen v-else />
+              <Minimize v-if="isFullscreen" :size="16" />
+              <Maximize v-else :size="16" />
             </template>
           </a-button>
         </a-tooltip>
@@ -100,7 +101,7 @@
             @click="setVisible"
           >
             <template #icon>
-              <icon-settings />
+              <Settings :size="16" />
             </template>
           </a-button>
         </a-tooltip>
@@ -116,14 +117,14 @@
           <template #content>
             <a-doption @click="handleProfile">
               <a-space>
-                <icon-user />
+                <User :size="16" />
                 <span>{{ $t('menu.profile') }}</span>
               </a-space>
             </a-doption>
             <a-dgroup>
               <a-doption @click="handleLogout">
                 <a-space>
-                  <icon-export />
+                  <LogOut :size="16" />
                   <span>
                     {{ $t('messageBox.logout') }}
                   </span>
@@ -142,6 +143,18 @@
   import { useRouter } from 'vue-router';
 
   import { useDark, useToggle, useFullscreen } from '@vueuse/core';
+  import {
+    Check,
+    Languages,
+    LogOut,
+    Maximize,
+    Menu as MenuIcon,
+    Minimize,
+    Moon,
+    Settings,
+    Sun,
+    User,
+  } from '@lucide/vue';
   import { useAppStore, useUserStore } from '@/store';
   import { LOCALE_OPTIONS } from '@/locale';
   import { resolveAvatar } from '@/utils/avatar';

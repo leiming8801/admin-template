@@ -1,51 +1,43 @@
-import axios from 'axios';
-import type { MenuItem } from '@admin-template/shared';
-import type { UserState } from '@/store/modules/user/types';
+import { httpClient } from './interceptor';
+import type {
+  LoginRequest,
+  LoginResult,
+  MenuItem,
+  RefreshTokenRequest,
+  RefreshTokenResult,
+  UpdatePasswordRequest,
+  UpdateProfileRequest,
+  UserProfile,
+} from '@admin-template/shared';
 
-export interface LoginData {
-  username: string;
-  password: string;
-}
-
-export interface LoginRes {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
+export type LoginData = LoginRequest;
+export type LoginRes = LoginResult;
 
 export function login(data: LoginData) {
-  return axios.post<LoginRes>('/api/auth/login', data);
+  return httpClient.post<LoginRes>('/api/auth/login', data);
 }
 
 export function logout() {
-  return axios.post('/api/auth/logout');
+  return httpClient.post<void>('/api/auth/logout');
 }
 
 export function getUserInfo() {
-  return axios.get<UserState>('/api/auth/profile');
+  return httpClient.get<UserProfile>('/api/auth/profile');
 }
 
 export function getMenuList() {
-  return axios.get<MenuItem[]>('/api/auth/menus');
+  return httpClient.get<MenuItem[]>('/api/auth/menus');
 }
 
 export function refreshToken(refreshToken: string) {
-  return axios.post<{ accessToken: string; expiresIn: number }>(
-    '/api/auth/refresh',
-    { refreshToken }
-  );
+  const data: RefreshTokenRequest = { refreshToken };
+  return httpClient.post<RefreshTokenResult>('/api/auth/refresh', data);
 }
 
-export function updateProfile(data: { nickname?: string }) {
-  return axios.put('/api/user/profile', data);
+export function updateProfile(data: UpdateProfileRequest) {
+  return httpClient.put<void>('/api/auth/profile', data);
 }
 
-export function updatePassword(data: {
-  oldPassword: string;
-  newPassword: string;
-}) {
-  return axios.put('/api/user/password', data);
+export function updatePassword(data: UpdatePasswordRequest) {
+  return httpClient.put<void>('/api/auth/password', data);
 }
-
-// 保持向后兼容
-export type { UserState };

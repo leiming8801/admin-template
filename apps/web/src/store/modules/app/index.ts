@@ -47,8 +47,8 @@ const useAppStore = defineStore('app', {
     },
     async fetchServerMenuConfig() {
       try {
-        const { data } = await getMenuList();
-        this.serverMenu = transformMenusToRoutes(data) as unknown as RouteRecordNormalized[];
+        const menus = await getMenuList();
+        this.serverMenu = transformMenusToRoutes(menus) as unknown as RouteRecordNormalized[];
       } catch {
         // interceptor 已处理错误提示
       }

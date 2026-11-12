@@ -15,8 +15,11 @@
           :max-length="100"
         />
         <template #extra>
-          <span style="color: var(--color-text-3); font-size: 12px">
+          <span class="form-hint">
             {{ $t('system.permission.form.name.extra') }}
+            <template v-if="namePreview">
+              · {{ $t('system.permission.form.name.preview', { name: namePreview }) }}
+            </template>
           </span>
         </template>
       </a-form-item>
@@ -50,11 +53,28 @@
           />
         </a-form-item>
         <a-form-item field="icon" :label="$t('system.permission.form.icon')">
-          <a-input
+          <a-select
             v-model="formData.icon"
+            allow-clear
             :placeholder="$t('system.permission.form.icon.placeholder')"
-            :max-length="50"
-          />
+          >
+            <a-option
+              v-for="name in menuIconOptions"
+              :key="name"
+              :value="name"
+              :label="name"
+            >
+              <a-space :size="8">
+                <component :is="menuIconMap[name]" :size="16" />
+                <span>{{ name }}</span>
+              </a-space>
+            </a-option>
+          </a-select>
+          <template #extra>
+            <span class="form-hint">
+              {{ $t('system.permission.form.icon.extra') }}
+            </span>
+          </template>
         </a-form-item>
         <a-form-item field="visible" :label="$t('system.permission.form.visible')">
           <a-select v-model="formData.visible">
@@ -81,8 +101,11 @@
   import { useI18n } from 'vue-i18n';
   import { createPermission, updatePermission } from '@/api/system';
   import type { Permission } from '@admin-template/shared';
+  import { usePermissionLabel } from '@/hooks/permission';
+  import { menuIconMap, menuIconOptions } from '@/utils/icons';
 
   const { t } = useI18n();
+  const labelOf = usePermissionLabel();
 
   const props = defineProps<{
     visible: boolean;
@@ -112,6 +135,14 @@
     name: [{ required: true, message: t('system.permission.form.name.required') }],
     type: [{ required: true, message: t('system.permission.form.type.required') }],
   }));
+
+  /** 名称填写的是 i18n key 时，实时预览界面实际显示文案 */
+  const namePreview = computed(() => {
+    const name = formData.name.trim();
+    if (!name) return '';
+    const label = labelOf(name);
+    return label === name ? '' : label;
+  });
 
   watch(
     () => props.visible,
@@ -177,3 +208,10 @@
     }
   };
 </script>
+
+<style scoped lang="less">
+  .form-hint {
+    color: var(--color-text-3);
+    font-size: 12px;
+  }
+</style>

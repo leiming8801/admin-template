@@ -24,5 +24,5 @@ export default {
   'system.profile.confirmPasswordPlaceholder': 'Enter new password again',
   'system.profile.confirmPasswordRequired': 'Please enter new password again',
   'system.profile.passwordMismatch': 'Passwords do not match',
-  'system.profile.passwordChanged': 'Password changed successfully',
+  'system.profile.passwordChanged': 'Password changed successfully, please log in again'
 };

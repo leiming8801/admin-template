@@ -2,14 +2,21 @@
   <div class="container">
     <Breadcrumb :items="['menu.system', 'menu.system.permission']" />
     <a-card class="general-card" :title="$t('menu.system.permission')">
-      <a-row style="margin-bottom: 16px">
-        <a-col :span="24" style="text-align: right">
+      <a-row style="margin-bottom: 16px" :gutter="16">
+        <a-col :span="8">
+          <a-input-search
+            v-model="keyword"
+            :placeholder="$t('system.permission.search.placeholder')"
+            allow-clear
+          />
+        </a-col>
+        <a-col :span="16" style="text-align: right">
           <a-button
             v-permission="'system:permission:add'"
             type="primary"
             @click="handleAddRoot"
           >
-            <template #icon><icon-plus /></template>
+            <template #icon><Plus :size="16" /></template>
             {{ $t('system.permission.add') }}
           </a-button>
         </a-col>
@@ -18,11 +25,14 @@
       <BasicTable
         ref="tableRef"
         :columns="columns"
-        :data="treeData"
+        :data="filteredTree"
         :pager="false"
         :loading="loading"
         :tree-config="{ expandAll: true }"
       >
+        <template #name="{ row }">
+          <span :title="row.name">{{ labelOf(row.name) }}</span>
+        </template>
         <template #type="{ row }">
           <a-tag :color="typeColorMap[row.type]">
             {{ typeTextMap[row.type] }}
@@ -84,6 +94,7 @@
 
 <script lang="ts" setup>
   import { ref, onMounted, computed } from 'vue';
+  import { Plus } from '@lucide/vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import type { VxeGridPropTypes } from 'vxe-table';
@@ -92,12 +103,25 @@
     deletePermission,
   } from '@/api/system';
   import type { Permission } from '@admin-template/shared';
+  import { usePermissionLabel } from '@/hooks/permission';
+  import { filterPermissionTree } from '@/utils/permission';
   import PermissionFormModal from './components/permission-form-modal.vue';
 
   const { t } = useI18n();
+  const labelOf = usePermissionLabel();
   const tableRef = ref();
   const loading = ref(false);
+  const keyword = ref('');
   const treeData = ref<Permission[]>([]);
+
+  /** 按关键词过滤后的权限树（匹配显示名 / 原始 key / 权限标识 / 路径） */
+  const filteredTree = computed(() =>
+    filterPermissionTree(treeData.value, keyword.value, (node) =>
+      [labelOf(node.name), node.name, node.permission, node.path]
+        .filter(Boolean)
+        .join(' '),
+    ),
+  );
   const modalVisible = ref(false);
   const editingPermission = ref<Permission | null>(null);
   const parentId = ref(0);
@@ -119,6 +143,8 @@
       field: 'name',
       title: t('system.permission.table.name'),
       treeNode: true,
+      minWidth: 220,
+      slots: { default: 'name' },
     },
     {
       field: 'type',
@@ -162,8 +188,8 @@
   const fetchData = async () => {
     loading.value = true;
     try {
-      const res = await fetchPermissionTree();
-      treeData.value = res.data;
+      const result = await fetchPermissionTree();
+      treeData.value = result;
     } catch {
       // interceptor 已处理
     } finally {

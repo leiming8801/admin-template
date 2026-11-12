@@ -1,9 +1,12 @@
 ---
 name: vxe-table-rule
-description: VxeTable v4 表格使用规范与后端日期格式化规范，统一表格组件、列配置、数据代理、日期输出的标准。
-alwaysApply: true
-version: 1.0
-last_verified: 2026-08-12
+description: 表格与日期格式化规范——表格必须用 BasicTable（禁 a-table / vxe-grid），列用 field 与 slots.default，固定列必须设 width，后端日期统一 formatDate 输出 YYYY-MM-DD HH:mm:ss。新增或修改 apps/web 表格页面、列配置、proxyConfig 或 apps/server 日期字段时使用。
+alwaysApply: false
+version: 1.1
+owner: 雷敏
+created: 2026-08-12
+updated: 2026-11-11
+last_verified: 2026-11-11
 verified_against:
   - 'vxe-pc-ui ^4.16.27'
   - 'vxe-table ^4.20.11'
@@ -15,7 +18,7 @@ verified_against:
 # VxeTable 表格使用与日期格式化规范
 
 > **适用范围**：`apps/web` 前端表格页面 + `apps/server` 后端 Service 层
-> **加载方式**：始终加载
+> **加载方式**：按需加载（写表格或格式化日期前读取）
 
 ---
 

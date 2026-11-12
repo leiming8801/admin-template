@@ -36,6 +36,12 @@ export default {
 
   'system.role.assign.title': '分配权限',
   'system.role.assign.loading': '加载中...',
-  'system.role.assign.tip': '勾选该角色可以访问的菜单和操作的权限',
+  'system.role.assign.tip':
+    '勾选该角色可访问的菜单和可操作的按钮；勾选子项会自动带上其上级菜单，取消菜单会同时取消其下所有子项',
+  'system.role.assign.search.placeholder': '搜索权限名称 / 权限标识',
+  'system.role.assign.checkAll': '全选',
+  'system.role.assign.selected': '已选 {count} 项',
+  'system.role.assign.expandAll': '展开全部',
+  'system.role.assign.collapseAll': '收起全部',
   'system.role.assign.success': '权限分配成功',
 };

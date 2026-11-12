@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { httpClient } from './interceptor';
 import type {
   Role,
   RoleListItem,
@@ -29,32 +29,32 @@ export interface RoleDetail extends Role {
 
 /** 分页查询角色列表 */
 export function fetchRoles(params: RoleListQuery) {
-  return axios.get<PageResult<RoleListItem>>('/api/system/roles', { params });
+  return httpClient.get<PageResult<RoleListItem>>('/api/system/roles', { params });
 }
 
 /** 获取所有启用角色（下拉选择用） */
 export function fetchAllRoles() {
-  return axios.get<Role[]>('/api/system/roles/all');
+  return httpClient.get<Role[]>('/api/system/roles/all');
 }
 
 /** 获取角色详情（含权限列表） */
 export function fetchRoleById(id: number) {
-  return axios.get<RoleDetail>(`/api/system/roles/${id}`);
+  return httpClient.get<RoleDetail>(`/api/system/roles/${id}`);
 }
 
 /** 创建角色 */
 export function createRole(data: RoleDto) {
-  return axios.post<Role>('/api/system/roles', data);
+  return httpClient.post<Role>('/api/system/roles', data);
 }
 
 /** 更新角色 */
 export function updateRole(id: number, data: Partial<RoleDto>) {
-  return axios.put<Role>(`/api/system/roles/${id}`, data);
+  return httpClient.put<Role>(`/api/system/roles/${id}`, data);
 }
 
 /** 删除角色 */
 export function deleteRole(id: number) {
-  return axios.delete(`/api/system/roles/${id}`);
+  return httpClient.delete(`/api/system/roles/${id}`);
 }
 
 /** 给角色分配权限 */
@@ -62,27 +62,27 @@ export function assignRolePermissions(
   id: number,
   data: AssignPermissionsDto,
 ) {
-  return axios.put(`/api/system/roles/${id}/permissions`, data);
+  return httpClient.put(`/api/system/roles/${id}/permissions`, data);
 }
 
 /** 获取权限树 */
 export function fetchPermissionTree() {
-  return axios.get<Permission[]>('/api/system/permissions/tree');
+  return httpClient.get<Permission[]>('/api/system/permissions/tree');
 }
 
 /** 创建权限 */
 export function createPermission(data: PermissionDto) {
-  return axios.post<Permission>('/api/system/permissions', data);
+  return httpClient.post<Permission>('/api/system/permissions', data);
 }
 
 /** 更新权限 */
 export function updatePermission(id: number, data: Partial<PermissionDto>) {
-  return axios.put<Permission>(`/api/system/permissions/${id}`, data);
+  return httpClient.put<Permission>(`/api/system/permissions/${id}`, data);
 }
 
 /** 删除权限 */
 export function deletePermission(id: number) {
-  return axios.delete(`/api/system/permissions/${id}`);
+  return httpClient.delete(`/api/system/permissions/${id}`);
 }
 
 // ============ 后台用户管理 ============
@@ -101,42 +101,42 @@ export interface AdminUserDetail extends AdminUser {
 
 /** 分页查询后台用户列表 */
 export function fetchAdminUsers(params: AdminUserListQuery) {
-  return axios.get<PageResult<AdminUser>>('/api/system/admin-users', {
+  return httpClient.get<PageResult<AdminUser>>('/api/system/admin-users', {
     params,
   });
 }
 
 /** 获取后台用户详情（含角色ID列表） */
 export function fetchAdminUserById(id: number) {
-  return axios.get<AdminUserDetail>(`/api/system/admin-users/${id}`);
+  return httpClient.get<AdminUserDetail>(`/api/system/admin-users/${id}`);
 }
 
 /** 创建后台用户 */
 export function createAdminUser(data: AdminUserDto) {
-  return axios.post<AdminUser>('/api/system/admin-users', data);
+  return httpClient.post<AdminUser>('/api/system/admin-users', data);
 }
 
 /** 更新后台用户 */
 export function updateAdminUser(id: number, data: Partial<AdminUserDto>) {
-  return axios.put<AdminUser>(`/api/system/admin-users/${id}`, data);
+  return httpClient.put<AdminUser>(`/api/system/admin-users/${id}`, data);
 }
 
 /** 删除后台用户 */
 export function deleteAdminUser(id: number) {
-  return axios.delete(`/api/system/admin-users/${id}`);
+  return httpClient.delete(`/api/system/admin-users/${id}`);
 }
 
 /** 修改后台用户状态 */
 export function updateAdminUserStatus(id: number, status: number) {
-  return axios.patch(`/api/system/admin-users/${id}/status`, { status });
+  return httpClient.patch(`/api/system/admin-users/${id}/status`, { status });
 }
 
 /** 给后台用户分配角色 */
 export function assignAdminUserRoles(id: number, data: AssignRolesDto) {
-  return axios.put(`/api/system/admin-users/${id}/roles`, data);
+  return httpClient.put(`/api/system/admin-users/${id}/roles`, data);
 }
 
 /** 重置后台用户密码 */
 export function resetAdminUserPassword(id: number, data: ResetPasswordDto) {
-  return axios.put(`/api/system/admin-users/${id}/password`, data);
+  return httpClient.put(`/api/system/admin-users/${id}/password`, data);
 }

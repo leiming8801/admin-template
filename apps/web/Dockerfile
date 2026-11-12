@@ -5,7 +5,7 @@ RUN npm install -g pnpm@9.15.0
 WORKDIR /app
 
 # 拷贝 workspace 根配置
-COPY package.json pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
 COPY packages/shared/package.json packages/shared/
 
 # 拷贝 web package.json
@@ -19,8 +19,8 @@ COPY packages/shared/ packages/shared/
 COPY apps/web/ apps/web/
 
 # 构建 shared 和 web
-RUN pnpm run build --filter=@admin-template/shared
-RUN pnpm run build --filter=@admin-template/web
+RUN pnpm --filter @admin-template/shared build
+RUN pnpm --filter @admin-template/web build
 
 # ---- 运行阶段 ----
 FROM nginx:alpine AS runner

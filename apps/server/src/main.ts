@@ -1,15 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { config } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+  const port = configService.getOrThrow<number>('port');
 
   // CORS
-  app.enableCors(config.cors);
+  app.enableCors(configService.getOrThrow('cors'));
 
   // 全局前缀
   app.setGlobalPrefix('api');
@@ -38,10 +40,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(config.port);
+  await app.listen(port);
 
-  Logger.log(`Server running on http://localhost:${config.port}`, 'Bootstrap');
-  Logger.log(`Swagger docs at http://localhost:${config.port}/docs`, 'Bootstrap');
+  Logger.log(`Server running on http://localhost:${port}`, 'Bootstrap');
+  Logger.log(`Swagger docs at http://localhost:${port}/docs`, 'Bootstrap');
 }
 
 bootstrap();
