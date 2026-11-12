@@ -68,7 +68,7 @@ async function refreshAccessToken(): Promise<string | null> {
 
   try {
     const response = await refreshInstance.post<ApiResponse<RefreshTokenResult>>(
-      '/api/auth/refresh',
+      '/api/admin/auth/refresh',
       { refreshToken },
     );
     const result = response.data;

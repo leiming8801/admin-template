@@ -46,7 +46,7 @@ pnpm workspace monorepo，三个包：`apps/server`（NestJS 后端）、`apps/w
 ### 4.1 命名规范
 
 - **包名**：`@admin-template/server`、`@admin-template/web`、`@admin-template/shared`
-- **后端 Controller 路由前缀**：全局 `/api`，模块级如 `auth`、`system/admin-users`、`system/roles`、`system/permissions`、`members`、`dashboard`
+- **后端 Controller 路由前缀**：全局 `/api`，管理后台模块级如 `admin/auth`、`admin/system/admin-users`、`admin/system/roles`、`admin/system/permissions`、`admin/members`、`admin/dashboard`
 - **权限码格式**：`模块:资源:操作`，如 `system:user:add`、`member:edit`
 - **菜单 name 字段**：存储 i18n key（如 `menu.system.adminUser`），前端 `t()` 翻译；自定义菜单可直接写显示名称
 - **角色编码**：小写字母 + 数字 + 下划线，如 `super_admin`、`operator`
@@ -65,7 +65,7 @@ pnpm workspace monorepo，三个包：`apps/server`（NestJS 后端）、`apps/w
 ### 4.3 前端编码约定
 
 - **Token 存储**：accessToken 存 `localStorage` key `admin_access_token`，refreshToken 存 `admin_refresh_token`
-- **动态路由**：`menuFromServer: true`（见 `settings.json`），路由从后端 `/api/auth/menus` 获取并动态注册
+- **动态路由**：`menuFromServer: true`（见 `settings.json`），路由从后端 `/api/admin/auth/menus` 获取并动态注册
 - **菜单转路由**：`src/utils/menu-to-route.ts` 中 `transformMenusToRoutes()` 将菜单树转为 Vue Router 路由
 - **权限控制**：
   - 路由级：`router/guard/permission.ts` 中的 `accessRouter()` 校验 `meta.roles` 或 `meta.requiresPermission`

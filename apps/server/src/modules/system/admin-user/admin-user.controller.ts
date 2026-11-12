@@ -21,7 +21,7 @@ import { RequirePermission } from '../../../common/decorators/require-permission
 
 @ApiTags('后台用户管理')
 @ApiBearerAuth()
-@Controller('system/admin-users')
+@Controller('admin/system/admin-users')
 export class AdminUserController {
   constructor(private readonly adminUserService: AdminUserService) {}
 

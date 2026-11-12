@@ -4,7 +4,7 @@ import { DashboardService } from './dashboard.service';
 
 @ApiTags('工作台')
 @ApiBearerAuth()
-@Controller('dashboard')
+@Controller('admin/dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 

@@ -17,7 +17,7 @@ import { RequirePermission } from '../../common/decorators/require-permission.de
 
 @ApiTags('会员管理')
 @ApiBearerAuth()
-@Controller('members')
+@Controller('admin/members')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 

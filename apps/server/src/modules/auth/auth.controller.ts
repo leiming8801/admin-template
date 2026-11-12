@@ -11,7 +11,7 @@ import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.de
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('认证')
-@Controller('auth')
+@Controller('admin/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

@@ -18,7 +18,7 @@ import { RequirePermission } from '../../../common/decorators/require-permission
 
 @ApiTags('角色管理')
 @ApiBearerAuth()
-@Controller('system/roles')
+@Controller('admin/system/roles')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
